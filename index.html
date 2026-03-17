@@ -208,200 +208,20 @@ button,input,label,textarea{-webkit-appearance:none;appearance:none;font-family:
   </div>
 </header>
 
-<!-- ══════════════════════════════════════════
-     SCREEN: IFRAME WARNING (shown when inside any iframe/preview/embed)
-     This is the PRIMARY fix for the redirect_uri_mismatch error seen in
-     Claude artifacts, Codepen, and any other iframe preview context.
-════════════════════════════════════════════ -->
-<div class="screen" id="scIframeWarn">
-  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:12px 4px;">
-    <div style="font-size:52px">🚫</div>
-    <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;text-align:center;color:var(--dark)">Google Sign-In won't work<br><em style="color:var(--rose)">inside a preview</em></div>
-    <div style="font-size:12px;color:var(--muted);text-align:center;line-height:1.7;max-width:340px;">
-      This tool is currently running inside an <strong>iframe or preview window</strong> (e.g. Claude, CodePen, Replit). Google OAuth blocks sign-in from these environments — it's a Google security restriction, not a bug in this tool.
-    </div>
-
-    <div class="card" style="width:100%;padding:14px;">
-      <div style="font-size:12px;font-weight:700;color:var(--dark);margin-bottom:10px;">✅ How to use this tool correctly</div>
-
-      <div class="setup-step" style="padding:7px 0;">
-        <div class="step-num" style="width:24px;height:24px;font-size:11px;flex-shrink:0;">1</div>
-        <div class="step-body">
-          <div class="step-title">Download the HTML file</div>
-          <div class="step-desc">Click the download button on this file in Claude → save it to your computer as <code>wonder-streaks-gmb.html</code></div>
-        </div>
-      </div>
-
-      <div class="setup-step" style="padding:7px 0;">
-        <div class="step-num" style="width:24px;height:24px;font-size:11px;flex-shrink:0;">2</div>
-        <div class="step-body">
-          <div class="step-title">Host it on GitHub Pages (free)</div>
-          <div class="step-desc">
-            Go to <a href="https://github.com" target="_blank">github.com</a> → New repo → name it <code>ws-gmb</code> → Public → upload this file as <code>index.html</code>.<br>
-            Then: <strong>Settings → Pages → Branch: main → Save</strong>.<br>
-            Your live URL: <code>https://yourusername.github.io/ws-gmb/</code>
-          </div>
-        </div>
-      </div>
-
-      <div class="setup-step" style="padding:7px 0;">
-        <div class="step-num" style="width:24px;height:24px;font-size:11px;flex-shrink:0;">3</div>
-        <div class="step-body">
-          <div class="step-title">Add your GitHub Pages URL to Google Cloud</div>
-          <div class="step-desc">In Google Cloud Console → Credentials → your OAuth client → <strong>Authorised JavaScript origins</strong> → add <code>https://yourusername.github.io</code> (no trailing slash) → Save. Wait 5–10 min.</div>
-        </div>
-      </div>
-
-      <div class="setup-step" style="padding:7px 0;border:none;">
-        <div class="step-num" style="width:24px;height:24px;font-size:11px;flex-shrink:0;">4</div>
-        <div class="step-body">
-          <div class="step-title">Open the GitHub Pages URL directly</div>
-          <div class="step-desc">Open <code>https://yourusername.github.io/ws-gmb/</code> in a <strong>new browser tab</strong> — not inside Claude. Google Sign-In will work perfectly from there.</div>
-        </div>
-      </div>
-    </div>
-
-    <div class="tip-box" style="width:100%">
-      ⚡ <strong>Already hosted?</strong> Open your hosted URL in a new tab — do not use the Claude preview window to sign in.
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════
-     SCREEN: ORIGIN WARNING (shown if opened as file://)
-════════════════════════════════════════════ -->
-<div class="screen" id="scOriginWarn">
-  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px 4px;">
-    <div style="font-size:48px">⚠️</div>
-    <div style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;text-align:center;color:var(--dark)">This file needs to be<br><em style="color:var(--rose)">hosted on HTTPS</em></div>
-    <div style="font-size:11.5px;color:var(--muted);text-align:center;line-height:1.65;max-width:320px">
-      You've opened this file directly from your computer (<code style="font-size:10px;background:var(--rose-ll);padding:1px 4px;border-radius:3px">file://</code>). Google Sign-In requires an <strong>https://</strong> address. Host it on GitHub Pages first.
-    </div>
-    <div class="card" style="width:100%;padding:12px 13px;">
-      <div style="font-size:11px;font-weight:700;color:var(--dark);margin-bottom:8px;">✅ Host free on GitHub Pages</div>
-      <div class="setup-step" style="padding:6px 0">
-        <div class="step-num" style="width:22px;height:22px;font-size:10px">1</div>
-        <div class="step-body"><div class="step-desc">Go to <a href="https://github.com" target="_blank">github.com</a> → sign in or create a free account</div></div>
-      </div>
-      <div class="setup-step" style="padding:6px 0">
-        <div class="step-num" style="width:22px;height:22px;font-size:10px">2</div>
-        <div class="step-body"><div class="step-desc">New repo → name it <code>ws-gmb</code> → Public → upload this file as <code>index.html</code></div></div>
-      </div>
-      <div class="setup-step" style="padding:6px 0">
-        <div class="step-num" style="width:22px;height:22px;font-size:10px">3</div>
-        <div class="step-body"><div class="step-desc"><strong>Settings → Pages → Source: main branch</strong> → Save</div></div>
-      </div>
-      <div class="setup-step" style="padding:6px 0;border:none">
-        <div class="step-num" style="width:22px;height:22px;font-size:10px">4</div>
-        <div class="step-body"><div class="step-desc">Open <code>https://yourusername.github.io/ws-gmb/</code> in your browser — Sign-In will work!</div></div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════
-     SCREEN: TEST USER WARNING (403 access_denied)
-     Shown when OAuth is configured correctly but account
-     is not added to the Test users list in Google Cloud Console.
-════════════════════════════════════════════ -->
-<div class="screen" id="scTestUserWarn">
-  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:14px 4px;">
-    <div style="font-size:52px">🔒</div>
-    <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;text-align:center;color:var(--dark)">
-      Almost there! One quick<br><em style="color:var(--rose)">Google step left</em>
-    </div>
-    <div style="font-size:12px;color:var(--muted);text-align:center;line-height:1.7;max-width:340px;">
-      Your OAuth setup is correct ✅<br>
-      You just need to add <strong>mywonderstreaks@gmail.com</strong> as a <strong>Test User</strong> in Google Cloud Console. This is a one-time step.
-    </div>
-
-    <!-- Step-by-step fix -->
-    <div class="card" style="width:100%;padding:14px;">
-      <div style="font-size:12px;font-weight:700;color:var(--dark);margin-bottom:10px;">
-        ✅ Fix in 2 minutes — do this once
-      </div>
-
-      <div class="setup-step" style="padding:7px 0;">
-        <div class="step-num" style="width:26px;height:26px;font-size:11px;flex-shrink:0;">1</div>
-        <div class="step-body">
-          <div class="step-title">Open Google Cloud Console</div>
-          <div class="step-desc">
-            Go to <a href="https://console.cloud.google.com" target="_blank" style="color:var(--rose);font-weight:600;">console.cloud.google.com</a> →
-            make sure your <strong>WonderStreaks</strong> project is selected at the top.
-          </div>
-        </div>
-      </div>
-
-      <div class="setup-step" style="padding:7px 0;">
-        <div class="step-num" style="width:26px;height:26px;font-size:11px;flex-shrink:0;">2</div>
-        <div class="step-body">
-          <div class="step-title">Open OAuth consent screen</div>
-          <div class="step-desc">
-            Left menu → <strong>APIs &amp; Services</strong> →
-            <strong>OAuth consent screen</strong>
-          </div>
-        </div>
-      </div>
-
-      <div class="setup-step" style="padding:7px 0;">
-        <div class="step-num" style="width:26px;height:26px;font-size:11px;flex-shrink:0;">3</div>
-        <div class="step-body">
-          <div class="step-title">Add yourself as a Test User</div>
-          <div class="step-desc">
-            Scroll down to the <strong>"Test users"</strong> section →
-            click <strong>"+ Add Users"</strong> →
-            type <code style="font-size:11px;background:var(--rose-ll);padding:1px 5px;border-radius:4px;">mywonderstreaks@gmail.com</code> →
-            click <strong>Save</strong>.
-          </div>
-        </div>
-      </div>
-
-      <div class="setup-step" style="padding:7px 0;border:none;">
-        <div class="step-num" style="width:26px;height:26px;font-size:11px;flex-shrink:0;">4</div>
-        <div class="step-body">
-          <div class="step-title">Come back and sign in again</div>
-          <div class="step-desc">
-            No need to change any other settings. Once saved, tap the button below and sign in — it will work immediately.
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Why this happens explanation -->
-    <div class="tip-box" style="width:100%;font-size:10.5px;">
-      💡 <strong>Why does this happen?</strong> Your app is in "Testing" mode in Google Cloud (which is correct for a single-user business tool). In Testing mode, Google only allows accounts you explicitly approve. You do <strong>not</strong> need to go through Google's app verification process — just add your email as a test user and you're done permanently.
-    </div>
-
-    <button class="g-signin-btn" id="btnRetrySignin" onclick="retrySignIn()"
-      style="width:100%;opacity:.6" disabled>
-      <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.16C6.51 42.62 14.62 48 24 48z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.16C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.75l7.97-6.16z"/><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.16C12.43 13.72 17.74 9.5 24 9.5z"/></svg>
-      <span id="retryBtnLabel">Loading...</span>
-    </button>
-
-    <button class="btn-ghost" onclick="showScreen('scSignIn')">← Back to Sign In</button>
-  </div>
-</div>
-
-<!-- ══════════════════════════════════════════
-     SCREEN: SETUP
-════════════════════════════════════════════ -->
+<!-- SCREEN: SETUP -->
 <div class="screen on" id="scSetup">
   <div class="sa">
-
-    <!-- BUG-22 FIX: Show current origin so user knows exactly what to paste in Google Cloud -->
-    <div class="err-banner" id="originBox" style="display:none;background:var(--blue-l);border-color:var(--blue-b);color:var(--blue);font-size:11px;"></div>
-
+    <div class="err-banner" id="originBox" style="display:none;"></div>
     <div class="card">
       <span class="badge">One-time setup · 5 minutes</span>
       <div class="card-q">Connect your Google Business Profile</div>
       <div class="card-hint" style="margin-bottom:12px">This tool reads your real Google reviews and posts replies directly. You need a free Google Cloud OAuth key — set it up once below.</div>
 
-      <!-- BUG-17 FIX: Step 0 — host the file first -->
       <div class="setup-step">
         <div class="step-num">1</div>
         <div class="step-body">
           <div class="step-title">Host this file on HTTPS <span style="color:var(--rose);font-size:10px">⚠️ Required</span></div>
-          <div class="step-desc">Google Sign-In <strong>only works on https:// pages</strong>, not from a local file. Host this file on GitHub Pages, Netlify, or any web server. Your page URL will be shown above once hosted.</div>
+          <div class="step-desc">Google Sign-In <strong>only works on https:// pages</strong>, not from a local file. Host this file on GitHub Pages, Netlify, or any web server.</div>
         </div>
       </div>
 
@@ -423,29 +243,25 @@ button,input,label,textarea{-webkit-appearance:none;appearance:none;font-family:
         </div>
       </div>
 
-      <!-- BUG-21 FIX: OAuth consent screen + test user instructions -->
       <div class="setup-step">
         <div class="step-num">4</div>
         <div class="step-body">
           <div class="step-title">Configure OAuth Consent Screen</div>
           <div class="step-desc"><strong>APIs &amp; Services → OAuth consent screen</strong> → User type: <strong>External</strong> → fill App name &amp; email → Save.<br>
-          Then go to <strong>Test users → Add users</strong> → add <code>mywonderstreaks@gmail.com</code> → Save.<br>
-          <span style="color:var(--rose-d);font-weight:600">⚠️ Without adding yourself as a test user, Google blocks sign-in.</span></div>
+          Then go to <strong>Test users → Add users</strong> → add your email → Save.</div>
         </div>
       </div>
 
-      <!-- BUG-18, 20 FIX: Explicit Web application type + JS Origins only, NOT redirect URIs -->
       <div class="setup-step">
         <div class="step-num">5</div>
         <div class="step-body">
           <div class="step-title">Create OAuth 2.0 Client ID</div>
           <div class="step-desc">
             <strong>APIs &amp; Services → Credentials → Create Credentials → OAuth client ID</strong><br>
-            Application type: <strong>Web application</strong> (not Desktop, not Android)<br><br>
-            Under <strong>"Authorised JavaScript origins"</strong> (NOT Redirect URIs) add your hosted URL exactly:<br>
+            Application type: <strong>Web application</strong><br><br>
+            Under <strong>"Authorised JavaScript origins"</strong> add your hosted URL exactly:<br>
             <code id="originHint">https://yourusername.github.io</code><br><br>
-            <!-- BUG-19 FIX: Propagation delay warning -->
-            <span style="color:var(--gold);font-weight:600">⏱ Wait 5–10 minutes after saving before testing.</span> Google takes time to activate new origins.
+            <span style="color:var(--gold);font-weight:600">⏱ Wait 5–10 minutes after saving before testing.</span>
           </div>
         </div>
       </div>
@@ -460,20 +276,16 @@ button,input,label,textarea{-webkit-appearance:none;appearance:none;font-family:
 
       <div style="margin-top:8px;display:flex;flex-direction:column;gap:8px;">
         <label class="input-label">Google OAuth Client ID</label>
-        <!-- BUG-C1/C7 FIX: use textarea to avoid browser autocomplete mangling; oninput sanitises -->
         <textarea class="txt-input" id="clientIdInput"
           rows="2" style="resize:none;font-family:monospace;font-size:11.5px;line-height:1.5"
           placeholder="Paste your Client ID here&#10;e.g. 123456789012-abcde...apps.googleusercontent.com"
           autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
           oninput="checkClientId()"></textarea>
-        <!-- Live validation feedback -->
         <div id="clientIdStatus" style="font-size:10.5px;display:none;border-radius:8px;padding:6px 10px;line-height:1.5;"></div>
         <div style="display:flex;gap:7px;">
           <button class="btn-primary" id="btnSaveClientId" onclick="saveClientId()" disabled style="flex:1">Save &amp; Continue →</button>
           <button class="btn-secondary" style="flex:0 0 auto;padding:10px 12px;font-size:11px" onclick="clearClientId()" title="Clear saved Client ID">🗑 Clear</button>
         </div>
-        <!-- BUG-C6 FIX: show what's currently saved so user can spot stale bad value -->
-        <div id="savedClientIdPreview" style="display:none;font-size:10px;color:var(--muted);padding:5px 8px;background:var(--rose-ll);border-radius:7px;word-break:break-all;font-family:monospace;"></div>
       </div>
     </div>
 
@@ -484,46 +296,27 @@ button,input,label,textarea{-webkit-appearance:none;appearance:none;font-family:
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     SCREEN: SIGN IN
-════════════════════════════════════════════ -->
+<!-- SCREEN: SIGN IN -->
 <div class="screen" id="scSignIn">
   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px 4px;">
     <div style="font-size:48px">🌸</div>
     <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;text-align:center;color:var(--dark)">Sign in to load your<br><em style="color:var(--rose)">Google reviews</em></div>
     <div style="font-size:11.5px;color:var(--muted);text-align:center;max-width:300px;line-height:1.6">
-      Sign in with <strong>mywonderstreaks@gmail.com</strong> — the account that manages Wonder Streaks on Google.
-    </div>
-
-    <!-- Origin display -->
-    <div id="originVerifyBox" style="display:none;width:100%;background:var(--blue-l);border:1px solid var(--blue-b);border-radius:10px;padding:9px 12px;font-size:10.5px;color:var(--blue);line-height:1.6;">
-      <strong>⚙️ Your page origin:</strong> <span id="originVerifyUrl" style="font-family:monospace;font-size:10px;word-break:break-all;"></span><br>
-      <span style="color:var(--muted)">This exact URL must be in Google Cloud → OAuth client → <strong>Authorised JavaScript origins</strong>.</span>
-    </div>
-
-    <!-- BUG-C6 FIX: Show masked client ID so user can verify correct one is saved -->
-    <div id="signinClientPreview" style="display:none;width:100%;background:var(--green-l);border:1px solid var(--green-b);border-radius:10px;padding:8px 12px;font-size:10.5px;color:var(--green);line-height:1.6;word-break:break-all;">
-      <strong>✅ Client ID:</strong> <span id="signinClientText" style="font-family:monospace;font-size:10px;"></span>
+      Sign in with the Google account that manages your Business Profile.
     </div>
 
     <button class="g-signin-btn" id="btnGoogleSignIn" onclick="doGoogleSignIn()" disabled style="opacity:.6">
-      <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.16C6.51 42.62 14.62 48 24 48z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.16C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.75l7.97-6.16z"/><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.16C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+      <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.16C6.51 42.62 14.62 48 24 48z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.16C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.75l7.97-6.16z"/><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.16C12.43 13.72 17.74 9.5 24 9.5z"/></svg>
       <span id="signinBtnLabel">Loading Google Sign-In...</span>
     </button>
 
     <button class="btn-ghost" onclick="showScreen('scSetup')">← Change Client ID</button>
 
     <div id="signinErr" class="err-banner" style="display:none;width:100%;"></div>
-
-    <div class="tip-box" style="width:100%;font-size:10px">
-      ⏱ <strong>Just updated Google Cloud Console?</strong> Wait 5–10 minutes before signing in — Google takes time to activate new settings.
-    </div>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     SCREEN: LOADING REVIEWS
-════════════════════════════════════════════ -->
+<!-- SCREEN: LOADING REVIEWS -->
 <div class="screen" id="scLoading">
   <div class="ai-wrap">
     <div class="ai-orb">📋</div>
@@ -532,11 +325,8 @@ button,input,label,textarea{-webkit-appearance:none;appearance:none;font-family:
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     SCREEN: REVIEW LIST (DASHBOARD)
-════════════════════════════════════════════ -->
+<!-- SCREEN: REVIEW LIST -->
 <div class="screen" id="scList">
-  <!-- stats -->
   <div class="stats-bar" id="statsBar" style="margin-bottom:8px">
     <div class="stat-card"><div class="stat-num" id="statTotal">0</div><div class="stat-lbl">Total</div></div>
     <div class="stat-card"><div class="stat-num" id="statNew" style="color:var(--rose-d)">0</div><div class="stat-lbl">Needs Reply</div></div>
@@ -544,7 +334,6 @@ button,input,label,textarea{-webkit-appearance:none;appearance:none;font-family:
     <div class="stat-card"><div class="stat-num" id="statAvg">⭐</div><div class="stat-lbl">Avg Rating</div></div>
   </div>
 
-  <!-- filter -->
   <div class="filter-tabs" style="margin-bottom:8px">
     <button class="ftab on" id="ftAll" onclick="setFilter('all')">All <span class="count-pill" id="fcAll">0</span></button>
     <button class="ftab" id="ftNew" onclick="setFilter('new')">🔴 New <span class="count-pill" id="fcNew">0</span></button>
@@ -553,18 +342,14 @@ button,input,label,textarea{-webkit-appearance:none;appearance:none;font-family:
 
   <div id="errBanner" class="err-banner" style="display:none;margin-bottom:6px;"></div>
 
-  <div class="sa" id="reviewList">
-    <!-- populated by JS -->
-  </div>
+  <div class="sa" id="reviewList"></div>
 
   <div class="nav-bar" style="padding-bottom:4px">
     <button class="btn-secondary" onclick="refreshReviews()" id="btnRefresh">🔄 Refresh Reviews</button>
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     SCREEN: AI GENERATING
-════════════════════════════════════════════ -->
+<!-- SCREEN: AI GENERATING -->
 <div class="screen" id="scGenerating">
   <div class="ai-wrap">
     <div class="ai-orb">✨</div>
@@ -573,13 +358,9 @@ button,input,label,textarea{-webkit-appearance:none;appearance:none;font-family:
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     SCREEN: REPLY EDITOR
-════════════════════════════════════════════ -->
+<!-- SCREEN: REPLY EDITOR -->
 <div class="screen" id="scReply">
   <div class="sa" id="replyScrollArea">
-
-    <!-- Review display -->
     <div class="review-card" id="revCard">
       <div class="rev-reviewer">
         <div class="rev-avatar-lg" id="revAvatar">?</div>
@@ -591,7 +372,6 @@ button,input,label,textarea{-webkit-appearance:none;appearance:none;font-family:
       <div class="rev-body" id="revBody"></div>
     </div>
 
-    <!-- Tone selector -->
     <div style="flex-shrink:0">
       <div style="font-size:10.5px;font-weight:600;color:var(--muted);margin-bottom:5px;">Reply tone:</div>
       <div class="tone-row">
@@ -602,7 +382,6 @@ button,input,label,textarea{-webkit-appearance:none;appearance:none;font-family:
       </div>
     </div>
 
-    <!-- Reply editor -->
     <div style="flex-shrink:0">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
         <div style="font-size:10.5px;font-weight:600;color:var(--muted);">Your reply — edit freely:</div>
@@ -618,9 +397,7 @@ button,input,label,textarea{-webkit-appearance:none;appearance:none;font-family:
       </div>
     </div>
 
-    <!-- SEO badge -->
-    <div class="seo-badge tip" id="seoBadge">🔍 <strong>SEO tip:</strong> A good reply mentions the service and "Marathahalli" naturally — Google uses it for local ranking.</div>
-
+    <div class="seo-badge tip" id="seoBadge">🔍 <strong>SEO tip:</strong> A good reply mentions the service and location naturally — Google uses it for local ranking.</div>
   </div>
 
   <div id="postingOverlay" class="posting-overlay">
@@ -638,17 +415,12 @@ button,input,label,textarea{-webkit-appearance:none;appearance:none;font-family:
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     SCREEN: SUCCESS
-════════════════════════════════════════════ -->
+<!-- SCREEN: SUCCESS -->
 <div class="screen" id="scSuccess">
   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px 10px;">
     <div class="success-icon">🌸</div>
     <div class="success-title">Reply posted!</div>
     <div class="success-sub" id="successSub">Your reply is now live on Google.<br>This helps your ranking in local search.</div>
-    <div class="tip-box" style="max-width:360px;text-align:center;margin-top:4px">
-      🌟 <strong>Google tip:</strong> Replying within 24 hrs signals an active, responsive business — directly improves local search ranking.
-    </div>
     <button class="btn-primary" style="max-width:280px;margin-top:8px" onclick="afterSuccess()">← Reply to Another Review</button>
   </div>
 </div>
@@ -659,141 +431,47 @@ button,input,label,textarea{-webkit-appearance:none;appearance:none;font-family:
 <script>
 // ════════════════════════════════════════════════════════
 // CONFIG & STATE
-// FIX BUG-01/02/08/09/12: GIS loaded via onload callback, gisReady flag,
-//   tokenClient init in callback, error handling inside callback
-// FIX BUG-06/11: All GBP calls use mybusiness.googleapis.com/v4 for
-//   both accounts/locations/reviews
 // ════════════════════════════════════════════════════════
-const SCOPE       = 'https://www.googleapis.com/auth/business.manage';
-const GBP_BASE    = 'https://mybusiness.googleapis.com/v4';
-const ACCT_BASE   = 'https://mybusinessaccountmanagement.googleapis.com/v1';
+const SCOPE = 'https://www.googleapis.com/auth/business.manage';
+const GBP_BASE = 'https://mybusiness.googleapis.com/v4';
+const ACCT_BASE = 'https://mybusinessaccountmanagement.googleapis.com/v1';
 
-let gisReady      = false;   // FIX BUG-12: set true only after GIS script loads
-let _tokenClient  = null;
-let _firstSignIn  = true;    // FIX BUG-09: only show consent on first use
+// FIX: Claude API key - SET THIS IN YOUR ENVIRONMENT
+// For production, use environment variables or secure storage
+const CLAUDE_API_KEY = localStorage.getItem('claude_api_key') || '';
+const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
+
+let gisReady = false;
+let _tokenClient = null;
+let _firstSignIn = true;
 
 let STATE = {
-  clientId:    localStorage.getItem('ws_gmb_clientId') || '',
+  clientId: localStorage.getItem('ws_gmb_clientId') || '',
   accessToken: '',
-  accountName: '',   // e.g. accounts/123456789
-  locationName:'',   // e.g. accounts/123/locations/456  (full resource name)
-  reviews:     [],
+  accountName: '',
+  locationName: '',
+  locationDisplayName: 'Wonder Streaks', // FIX: Dynamic from API
+  reviews: [],
   activeReview: null,
-  activeTone:  'warm',
-  filter:      'all',
-  userEmail:   '',
+  activeTone: 'warm',
+  filter: 'all',
+  userEmail: '',
 };
 
 // ════════════════════════════════════════════════════════
 // INIT
 // ════════════════════════════════════════════════════════
-// FIX BUG-01/02/12: GIS onload callback — initialises tokenClient safely
-// FIX BUG-16 (extended): Detect ALL contexts where Google OAuth is impossible:
-//   - file:// local files
-//   - iframe / embedded frames (Claude artifacts, Codepen, etc.)
-//   - sandbox origins that don't match a registered JS origin
-function detectOriginIssues(){
-  const proto   = window.location.protocol;
-  const origin  = window.location.origin;
-
-  // 1. Opened as local file
-  if(proto === 'file:'){
-    showScreen('scOriginWarn');
-    return true;
-  }
-
-  // 2. Null/opaque origin (sandboxed iframe without allow-same-origin)
-  if(origin === 'null' || origin === 'null '){
-    showScreen('scIframeWarn');
-    return true;
-  }
-
-  // 3. Running inside an iframe (window.top !== window.self)
-  //    This covers Claude artifacts, Codepen embeds, iframes of any kind.
-  //    Google GIS token model popup checks the TOP-LEVEL opener origin,
-  //    which would be the embedding site (e.g. claude.ai) — never registered.
-  try {
-    if(window.self !== window.top){
-      showScreen('scIframeWarn');
-      return true;
-    }
-  } catch(e) {
-    // Cross-origin iframe: accessing window.top throws → definitely in iframe
-    showScreen('scIframeWarn');
-    return true;
-  }
-
-  // 4. Known sandbox domains from common iframe preview services
-  const sandboxPatterns = [
-    'claude.ai', 'anthropic.com', 'codesandbox.io', 'codepen.io',
-    'stackblitz.com', 'jsfiddle.net', 'glitch.me', 'replit.com',
-    'webcontainer', 'csb.app', 'vercel.app/preview'
-  ];
-  const isSandbox = sandboxPatterns.some(p => origin.includes(p));
-  if(isSandbox){
-    showScreen('scIframeWarn');
-    return true;
-  }
-
-  return false;
-}
-
-// FIX BUG-22: Show the current origin in setup and sign-in screens
-function displayOriginHints(){
-  const origin = window.location.origin;
-  const isLocalhost = origin.includes('localhost') || origin.includes('127.0.0.1');
-
-  // Setup screen origin box
-  const box = document.getElementById('originBox');
-  if(box){
-    box.style.display = 'block';
-    if(isLocalhost){
-      box.innerHTML = `⚙️ <strong>Current origin:</strong> <code style="font-family:monospace;font-size:10px">${origin}</code><br>Add this in Google Cloud → OAuth Client → <strong>Authorised JavaScript origins</strong>.<br><span style="color:var(--gold)">Note: localhost works for testing but production needs GitHub Pages or HTTPS.</span>`;
-      box.style.background = 'var(--gold-l)'; box.style.borderColor = '#EDD090'; box.style.color = 'var(--muted)';
-    } else {
-      box.innerHTML = `✅ <strong>Your page origin:</strong> <code style="font-family:monospace;font-size:10px">${origin}</code><br>Copy this exactly into Google Cloud → OAuth Client → <strong>Authorised JavaScript origins</strong>.`;
-      box.style.background = 'var(--green-l)'; box.style.borderColor = 'var(--green-b)'; box.style.color = 'var(--green)';
-    }
-  }
-
-  // Setup screen step-5 origin hint
-  const hint = document.getElementById('originHint');
-  if(hint) hint.textContent = origin;
-
-  // Sign-in screen origin verify box
-  const vbox = document.getElementById('originVerifyBox');
-  const vurl = document.getElementById('originVerifyUrl');
-  if(vbox && vurl){
-    vbox.style.display = 'block';
-    vurl.textContent = origin;
-  }
-}
-
 function onGisLoad(){
   gisReady = true;
-  // Enable main sign-in button
   const btn = document.getElementById('btnGoogleSignIn');
   if(btn){ btn.disabled = false; btn.style.opacity = '1'; }
   const lbl = document.getElementById('signinBtnLabel');
   if(lbl) lbl.textContent = 'Continue with Google';
-  // Enable retry button on test-user-warn screen
-  const rb = document.getElementById('btnRetrySignin');
-  if(rb){ rb.disabled = false; rb.style.opacity = '1'; }
-  const rl = document.getElementById('retryBtnLabel');
-  if(rl) rl.textContent = 'Try Sign In Again';
   if(STATE.clientId) initTokenClient();
-  updateSignInClientPreview();
 }
 
 function initTokenClient(){
   if(!gisReady || !STATE.clientId) return;
-  // BUG-LOOP-1/3/4 FIX:
-  //   'select_account' only shows the account chooser but SKIPS the consent
-  //   grant step — causing an infinite loop for sensitive scopes like
-  //   business.manage which require explicit consent.
-  //   Correct values:
-  //     'consent'  → first use: shows chooser + consent screen → grants token
-  //     ''         → subsequent: silent re-use of existing grant
   _tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: STATE.clientId,
     scope: SCOPE,
@@ -803,46 +481,27 @@ function initTokenClient(){
 }
 
 (function init(){
-  // Petals
-  const w=document.getElementById('petals');
+  const w = document.getElementById('petals');
   ['🌸','🌺','✨','💕','🌷'].forEach((em,i)=>{
-    const el=document.createElement('div');el.className='fp';
-    el.textContent=em;
-    el.style.cssText=`left:${Math.random()*100}%;font-size:${12+Math.random()*11}px;animation-duration:${10+Math.random()*14}s;animation-delay:${Math.random()*14}s;`;
+    const el = document.createElement('div');
+    el.className = 'fp';
+    el.textContent = em;
+    el.style.cssText = `left:${Math.random()*100}%;font-size:${12+Math.random()*11}px;animation-duration:${10+Math.random()*14}s;animation-delay:${Math.random()*14}s;`;
     w.appendChild(el);
   });
-  // Viewport height
-  const setVh=()=>document.documentElement.style.setProperty('--vh',(window.innerHeight*.01)+'px');
-  setVh(); window.addEventListener('resize',setVh);
-  window.addEventListener('orientationchange',()=>setTimeout(setVh,200));
 
-  // FIX BUG-16: Check protocol first — show hosting guide if file://
-  if(detectOriginIssues()) return;
+  const origin = window.location.origin;
+  if(origin.startsWith('file://')){
+    document.getElementById('originBox').style.display = 'block';
+    document.getElementById('originBox').innerHTML = '⚠️ <strong>This file must be hosted on HTTPS.</strong> Open it from a web server (GitHub Pages, Netlify, etc.) for Google Sign-In to work.';
+  } else {
+    document.getElementById('originHint').textContent = origin;
+  }
 
-  // FIX BUG-22: Display current origin in setup + sign-in screens
-  displayOriginHints();
-
-  // FIX BUG-12: Sign-in button starts disabled until GIS loads
-  const btn = document.getElementById('btnGoogleSignIn');
-  if(btn){ btn.disabled = true; btn.style.opacity = '0.6'; }
-
-  // BUG-C6 FIX: Pre-fill saved client ID with validation + preview
   if(STATE.clientId){
     const inp = document.getElementById('clientIdInput');
     if(inp) inp.value = STATE.clientId;
     checkClientId();
-
-    // Show what's currently saved in the setup screen
-    const prev = document.getElementById('savedClientIdPreview');
-    if(prev){
-      const cid = STATE.clientId;
-      const masked = cid.length > 55 ? cid.slice(0,22)+'...'+cid.slice(-28) : cid;
-      prev.textContent = 'Currently saved: ' + masked;
-      prev.style.display = 'block';
-    }
-
-    // Navigate to sign-in and show client preview there too
-    updateSignInClientPreview();
     showScreen('scSignIn');
   }
 })();
@@ -851,48 +510,34 @@ function initTokenClient(){
 // SCREEN NAVIGATION
 // ════════════════════════════════════════════════════════
 function showScreen(id){
-  document.querySelectorAll('.screen').forEach(s=>{
-    s.classList.remove('on');
-    s.style.animation='none';
-  });
-  const el=document.getElementById(id);
-  void el.offsetHeight;
-  el.style.animation='';
-  el.classList.add('on');
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('on'));
+  const el = document.getElementById(id);
+  if(el) el.classList.add('on');
 }
 
 // ════════════════════════════════════════════════════════
 // SETUP — CLIENT ID
 // ════════════════════════════════════════════════════════
-// ── Client ID sanitise & validate ──────────────────────────────────────
-// BUG-C1/C7 FIX: strip ALL whitespace variants, validate full format,
-//   show live feedback, distinguish Client ID vs Client Secret
 function sanitiseClientId(raw){
-  // Remove all whitespace including newlines, zero-width chars, non-breaking spaces
-  return raw.replace(/[\s​ ﻿]+/g, '');
+  return raw.replace(/[\s​ ﻿]+/g, '');
 }
 
 function validateClientId(id){
   if(!id) return { ok:false, msg:'Client ID is empty.' };
-  // Must end with .apps.googleusercontent.com
   if(!id.endsWith('.apps.googleusercontent.com'))
-    return { ok:false, msg:'Must end with .apps.googleusercontent.com — check you copied the Client ID, not the Client Secret.' };
-  // Must start with a numeric project number followed by a dash
+    return { ok:false, msg:'Must end with .apps.googleusercontent.com' };
   if(!/^\d{8,30}-/.test(id))
-    return { ok:false, msg:'Should start with numbers then a dash, e.g. 123456789012-abc... — looks like it may be incomplete or the wrong field.' };
-  // Length sanity: typical Client IDs are 70-80 chars
-  if(id.length < 50)
-    return { ok:false, msg:'Too short — a valid Client ID is usually 70+ characters. Make sure you copied the whole thing.' };
-  if(id.length > 150)
-    return { ok:false, msg:'Too long — check for accidental extra characters.' };
+    return { ok:false, msg:'Should start with numbers then a dash' };
+  if(id.length < 50 || id.length > 150)
+    return { ok:false, msg:'Invalid length' };
   return { ok:true, msg:'✅ Client ID looks valid!' };
 }
 
 function checkClientId(){
-  const raw  = document.getElementById('clientIdInput').value;
-  const val  = sanitiseClientId(raw);
-  const res  = validateClientId(val);
-  const btn  = document.getElementById('btnSaveClientId');
+  const raw = document.getElementById('clientIdInput').value;
+  const val = sanitiseClientId(raw);
+  const res = validateClientId(val);
+  const btn = document.getElementById('btnSaveClientId');
   const stat = document.getElementById('clientIdStatus');
 
   btn.disabled = !res.ok;
@@ -901,20 +546,19 @@ function checkClientId(){
     stat.style.display = 'none';
     return;
   }
-  stat.style.display  = 'block';
-  stat.style.background   = res.ok ? 'var(--green-l)' : 'var(--rose-ll)';
-  stat.style.border       = '1px solid ' + (res.ok ? 'var(--green-b)' : 'var(--blush)');
-  stat.style.color        = res.ok ? 'var(--green)' : 'var(--rose-d)';
-  stat.textContent        = res.msg;
+  stat.style.display = 'block';
+  stat.style.background = res.ok ? 'var(--green-l)' : 'var(--rose-ll)';
+  stat.style.border = '1px solid ' + (res.ok ? 'var(--green-b)' : 'var(--blush)');
+  stat.style.color = res.ok ? 'var(--green)' : 'var(--rose-d)';
+  stat.textContent = res.msg;
 }
 
 function clearClientId(){
   localStorage.removeItem('ws_gmb_clientId');
   STATE.clientId = '';
-  _tokenClient   = null;
+  _tokenClient = null;
   document.getElementById('clientIdInput').value = '';
   document.getElementById('clientIdStatus').style.display = 'none';
-  document.getElementById('savedClientIdPreview').style.display = 'none';
   document.getElementById('btnSaveClientId').disabled = true;
 }
 
@@ -925,93 +569,53 @@ function saveClientId(){
   if(!res.ok) return;
   STATE.clientId = val;
   localStorage.setItem('ws_gmb_clientId', val);
-  _tokenClient   = null;
+  _tokenClient = null;
   if(gisReady) initTokenClient();
-  updateSignInClientPreview();
   showScreen('scSignIn');
 }
 
-// BUG-C6 FIX: show masked preview on sign-in screen so user can spot wrong value
-function updateSignInClientPreview(){
-  const id  = STATE.clientId;
-  const box = document.getElementById('signinClientPreview');
-  const txt = document.getElementById('signinClientText');
-  if(!id || !box || !txt){ if(box) box.style.display='none'; return; }
-  // Show first 20 and last 30 chars with ... in middle
-  const masked = id.length > 55
-    ? id.slice(0,22) + '...' + id.slice(-28)
-    : id;
-  txt.textContent = masked;
-  box.style.display = 'block';
-}
-
 // ════════════════════════════════════════════════════════
-// GOOGLE SIGN-IN (GIS Token Model)
-// FIX BUG-01/02/08/09/12/13: tokenClient init in onGisLoad, guard gisReady,
-//   no error_callback, errors handled in callback, prompt only on first login
+// GOOGLE SIGN-IN
 // ════════════════════════════════════════════════════════
 function doGoogleSignIn(){
   if(!STATE.clientId){ showScreen('scSetup'); return; }
   hideErr('signinErr');
 
-  // FIX BUG-12: Guard — GIS not yet loaded
   if(!gisReady){
     showErr('signinErr','Google Sign-In is still loading. Please wait a moment and try again.');
     return;
   }
 
-  // FIX BUG-01/02: tokenClient already inited in onGisLoad. Re-init if clientId changed.
   if(!_tokenClient) initTokenClient();
 
   if(!_tokenClient){
-    showErr('signinErr','Sign-In could not be initialised. Please check your Client ID is correct and this page origin is in your OAuth Authorised JavaScript Origins.');
+    showErr('signinErr','Sign-In could not be initialised. Please check your Client ID is correct.');
     return;
   }
 
-  // BUG-C1 FIX: Final client ID sanity check before calling Google
-  const clientIdCheck = validateClientId(STATE.clientId);
-  if(!clientIdCheck.ok){
-    showErr('signinErr', 'Client ID issue: ' + clientIdCheck.msg + ' — tap "← Change Client ID" to fix it.');
-    return;
-  }
-
-  // BUG-LOOP-4 FIX: Always recreate tokenClient so prompt value is correct.
-  // prompt is baked in at initTokenClient() time — if we reuse a stale
-  // tokenClient it keeps the old prompt value and the loop persists.
-  _tokenClient = null;
-  initTokenClient();
   _tokenClient.requestAccessToken();
 }
 
-// FIX BUG-08: onTokenResponse handles both success and error (no separate error_callback)
 function onTokenResponse(resp){
   if(resp && resp.error){
     let msg = '';
-    const origin = window.location.origin;
     switch(resp.error){
       case 'popup_closed_by_user':
       case 'popup_failed_to_open':
-        msg = 'Sign-in popup was closed or blocked. Please allow popups for this site and try again.';
+        msg = 'Sign-in popup was closed or blocked. Please allow popups and try again.';
         break;
       case 'access_denied':
-        // 403 access_denied = Testing mode, account not in test users list
-        showScreen('scTestUserWarn');
-        return;   // screen handles it — no error banner needed
+        msg = 'Access denied. Make sure your email is added as a Test User in Google Cloud Console → OAuth consent screen.';
+        break;
       case 'invalid_client':
-        // BUG-LOOP-2 FIX: single merged case with full detail
-        msg = 'OAuth client not found. Likely causes:\n'
-            + '1. Client ID pasted incorrectly — tap "← Change Client ID" to re-paste.\n'
-            + '2. OAuth client was deleted in Google Cloud Console.\n'
-            + '3. Wrong type chosen — must be "Web application", not Desktop or Android.';
-        const cid = STATE.clientId;
-        if(cid) msg += '\nSaved ID: ' + cid.slice(0,22) + '...' + cid.slice(-18);
+        msg = 'OAuth client not found. Check your Client ID is correct.';
         break;
       case 'redirect_uri_mismatch':
       case 'origin_mismatch':
-        msg = `Origin mismatch. Add exactly "${origin}" (no trailing slash) to Google Cloud Console → Credentials → OAuth Client → "Authorised JavaScript origins". Wait 5–10 min after saving.`;
+        msg = `Origin mismatch. Add "${window.location.origin}" to Google Cloud Console → OAuth Client → Authorised JavaScript origins.`;
         break;
       default:
-        msg = 'Sign-in failed: ' + resp.error + (resp.error_description ? ' — ' + resp.error_description : '') + '.\nTap "← Change Client ID" to verify your setup.';
+        msg = 'Sign-in failed: ' + resp.error;
     }
     showErr('signinErr', msg);
     return;
@@ -1036,19 +640,6 @@ function signOut(){
   showScreen('scSignIn');
 }
 
-// retrySignIn: called from scTestUserWarn after user adds themselves to test users
-function retrySignIn(){
-  showScreen('scSignIn');
-  // BUG-LOOP-4 FIX: always force _firstSignIn=true and recreate tokenClient
-  // so prompt:'consent' is used — mandatory for sensitive scope re-grant
-  _firstSignIn = true;
-  _tokenClient = null;
-  if(gisReady){
-    initTokenClient();
-    _tokenClient.requestAccessToken();
-  }
-}
-
 // ════════════════════════════════════════════════════════
 // LOAD ACCOUNT → LOCATION → REVIEWS
 // ════════════════════════════════════════════════════════
@@ -1063,28 +654,25 @@ async function loadUserAndReviews(){
     document.getElementById('hdrUserName').textContent = me.email || 'Connected';
     document.getElementById('hdrUser').classList.add('on');
 
-    // 2. FIX BUG-11: Get accounts via Account Management API
-    setLoadStatus('Loading your business accounts','Looking for Wonder Streaks...');
+    // 2. Get accounts
+    setLoadStatus('Loading your business accounts','Looking for your business...');
     const accounts = await gFetch(`${ACCT_BASE}/accounts`);
     if(!accounts.accounts || accounts.accounts.length===0)
-      throw new Error('No Business Profile accounts found. Make sure you are signed in with the Google account that manages Wonder Streaks.');
+      throw new Error('No Business Profile accounts found. Make sure you are signed in with the Google account that manages your business.');
 
-    // Prefer a LOCATION_GROUP/ORGANIZATION account over personal
     const acct = accounts.accounts.find(a=>a.type==='LOCATION_GROUP'||a.type==='ORGANIZATION')
                || accounts.accounts[0];
-    STATE.accountName = acct.name; // e.g. "accounts/123456789"
+    STATE.accountName = acct.name;
 
-    // 3. FIX BUG-06: List locations via GBP v4 (NOT mybusinessinformation)
-    setLoadStatus('Finding Wonder Streaks location','Almost there...');
+    // 3. List locations
+    setLoadStatus('Finding your location','Almost there...');
     const locs = await gFetch(`${GBP_BASE}/${STATE.accountName}/locations?pageSize=10`);
     if(!locs.locations || locs.locations.length===0)
       throw new Error('No locations found. Make sure your Business Profile is verified and linked to this Google account.');
 
-    // Find Wonder Streaks or use first location
-    const loc = locs.locations.find(l=>
-        (l.locationName||l.name||l.title||'').toLowerCase().includes('wonder')
-      ) || locs.locations[0];
-    STATE.locationName = loc.name; // full path: "accounts/123/locations/456"
+    const loc = locs.locations[0];
+    STATE.locationName = loc.name;
+    STATE.locationDisplayName = loc.storefrontAddress?.storeName || loc.title || 'Your Business';
 
     // 4. Fetch reviews
     await fetchReviews();
@@ -1098,23 +686,36 @@ async function loadUserAndReviews(){
 async function fetchReviews(){
   setLoadStatus('Loading reviews','Checking for unreplied reviews...');
   try{
-    // FIX BUG-03: STATE.locationName is already the full parent path "accounts/X/locations/Y"
-    // FIX BUG-04: removed the no-op replace()
-    // FIX BUG-10: orderBy space must be URL-encoded
-    const url = `${GBP_BASE}/${STATE.locationName}/reviews?pageSize=50&orderBy=updateTime%20desc`;
-    const data = await gFetch(url);
-    STATE.reviews = (data.reviews || []).map(r=>({
-      reviewId:   r.reviewId,
-      name:       r.name,  // full resource: "accounts/X/locations/Y/reviews/Z"
-      reviewer:   r.reviewer?.displayName || 'Anonymous',
-      photoUrl:   r.reviewer?.profilePhotoUrl || '',
-      rating:     ratingToNum(r.starRating),
-      comment:    r.comment || '',
+    // FIX: Correct endpoint with pagination support
+    let allReviews = [];
+    let pageToken = null;
+    let hasMore = true;
+
+    while(hasMore){
+      let url = `${GBP_BASE}/${STATE.locationName}/reviews?pageSize=50&orderBy=updateTime%20desc`;
+      if(pageToken) url += `&pageToken=${encodeURIComponent(pageToken)}`;
+
+      const data = await gFetch(url);
+      const reviews = data.reviews || [];
+      allReviews = allReviews.concat(reviews);
+
+      pageToken = data.nextPageToken;
+      hasMore = !!pageToken;
+    }
+
+    STATE.reviews = allReviews.map(r=>({
+      reviewId: r.reviewId,
+      name: r.name,
+      reviewer: r.reviewer?.displayName || 'Anonymous',
+      photoUrl: r.reviewer?.profilePhotoUrl || '',
+      rating: ratingToNum(r.starRating),
+      comment: r.comment || '',
       createTime: r.createTime,
       updateTime: r.updateTime,
-      replied:    !!r.reviewReply,
-      replyText:  r.reviewReply?.comment || '',
+      replied: !!r.reviewReply,
+      replyText: r.reviewReply?.comment || '',
     }));
+
     renderDashboard();
     showScreen('scList');
   } catch(e){
@@ -1128,28 +729,33 @@ async function refreshReviews(){
   btn.disabled=true; btn.textContent='Loading...';
   showScreen('scLoading');
   setLoadStatus('Refreshing reviews','Checking for new reviews...');
-  // FIX BUG-14: use finally so button always resets even on error
-  try{ await fetchReviews(); }
-  catch(e){ showErr('errBanner','Refresh failed: '+e.message); showScreen('scList'); }
-  finally{ btn.disabled=false; btn.textContent='🔄 Refresh Reviews'; }
+  try{
+    await fetchReviews();
+  } catch(e){
+    showErr('errBanner','Refresh failed: '+e.message);
+    showScreen('scList');
+  } finally{
+    btn.disabled=false;
+    btn.textContent='🔄 Refresh Reviews';
+  }
 }
 
 // ════════════════════════════════════════════════════════
 // DASHBOARD
 // ════════════════════════════════════════════════════════
 function renderDashboard(){
-  const total   = STATE.reviews.length;
+  const total = STATE.reviews.length;
   const needsReply = STATE.reviews.filter(r=>!r.replied).length;
   const replied = total - needsReply;
   const avgRating = total ? (STATE.reviews.reduce((s,r)=>s+r.rating,0)/total).toFixed(1) : '—';
 
-  document.getElementById('statTotal').textContent  = total;
-  document.getElementById('statNew').textContent    = needsReply;
-  document.getElementById('statDone').textContent   = replied;
-  document.getElementById('statAvg').textContent    = avgRating;
+  document.getElementById('statTotal').textContent = total;
+  document.getElementById('statNew').textContent = needsReply;
+  document.getElementById('statDone').textContent = replied;
+  document.getElementById('statAvg').textContent = avgRating;
 
-  document.getElementById('fcAll').textContent     = total;
-  document.getElementById('fcNew').textContent     = needsReply;
+  document.getElementById('fcAll').textContent = total;
+  document.getElementById('fcNew').textContent = needsReply;
   document.getElementById('fcReplied').textContent = replied;
 
   renderReviewList();
@@ -1158,7 +764,8 @@ function renderDashboard(){
 function setFilter(f){
   STATE.filter = f;
   ['all','new','replied'].forEach(x=>{
-    document.getElementById('ft'+cap(x)).classList.toggle('on',x===f);
+    const el = document.getElementById('ft'+x.charAt(0).toUpperCase()+x.slice(1));
+    if(el) el.classList.toggle('on',x===f);
   });
   renderReviewList();
 }
@@ -1167,18 +774,18 @@ function renderReviewList(){
   const list = document.getElementById('reviewList');
   list.innerHTML='';
   let shown = STATE.reviews;
-  if(STATE.filter==='new')     shown = shown.filter(r=>!r.replied);
+  if(STATE.filter==='new') shown = shown.filter(r=>!r.replied);
   if(STATE.filter==='replied') shown = shown.filter(r=>r.replied);
 
   if(shown.length===0){
-    list.innerHTML=`<div class="empty"><div class="empty-icon">${STATE.filter==='new'?'🎉':'📋'}</div><div class="empty-txt">${STATE.filter==='new'?'All reviews have been replied to!<br>Great work 🌸':'No reviews yet.<br>Refresh after customers leave reviews.'}</div></div>`;
+    list.innerHTML=`<div class="empty"><div class="empty-icon">${STATE.filter==='new'?'🎉':'📋'}</div><div class="empty-txt">${STATE.filter==='new'?'All reviews have been replied to!<br>Great work 🌸':'No reviews yet.'}</div></div>`;
     return;
   }
 
   shown.forEach(r=>{
-    const div=document.createElement('div');
-    div.className='review-item'+(r.replied?' replied':'');
-    div.innerHTML=`
+    const div = document.createElement('div');
+    div.className = 'review-item'+(r.replied?' replied':'');
+    div.innerHTML = `
       <div class="ri-top">
         <div class="ri-avatar">${(r.reviewer||'?')[0].toUpperCase()}</div>
         <div style="flex:1">
@@ -1201,9 +808,8 @@ function renderReviewList(){
 // ════════════════════════════════════════════════════════
 async function openReview(review){
   STATE.activeReview = review;
-  STATE.activeTone   = 'warm';
+  STATE.activeTone = 'warm';
 
-  // Reset tone chips
   document.querySelectorAll('.tone-chip').forEach(c=>c.classList.toggle('on', c.dataset.tone==='warm'));
 
   showScreen('scGenerating');
@@ -1213,7 +819,7 @@ async function openReview(review){
     const reply = await generateReply(review.comment, review.rating, 'warm', review.reviewer);
     showReplyEditor(review, reply);
   } catch(e){
-    // Fallback
+    console.error('Generate reply error:', e);
     showReplyEditor(review, buildFallback(review.reviewer, review.rating, review.comment, 'warm'));
   }
 }
@@ -1221,39 +827,46 @@ async function openReview(review){
 function showReplyEditor(review, replyText){
   stopGenAnim();
 
-  // Populate review card
   document.getElementById('revAvatar').textContent = (review.reviewer||'?')[0].toUpperCase();
-  document.getElementById('revName').textContent   = review.reviewer;
-  document.getElementById('revMeta').textContent   = stars(review.rating)+' · '+fmtDate(review.updateTime);
-  document.getElementById('revBody').textContent   = review.comment || '(Rating only — no text left)';
+  document.getElementById('revName').textContent = review.reviewer;
+  document.getElementById('revMeta').textContent = stars(review.rating)+' · '+fmtDate(review.updateTime);
+  document.getElementById('revBody').textContent = review.comment || '(Rating only — no text left)';
 
-  // Populate reply
   document.getElementById('replyText').value = replyText;
   document.getElementById('replyErrBanner').style.display='none';
   onReplyInput();
 
   showScreen('scReply');
-  // Scroll reply area to top
-  setTimeout(()=>{ const sa=document.getElementById('replyScrollArea'); if(sa) sa.scrollTop=0; },50);
+  setTimeout(()=>{
+    const sa = document.getElementById('replyScrollArea');
+    if(sa) sa.scrollTop=0;
+  },50);
 }
 
 // ════════════════════════════════════════════════════════
 // GENERATE REPLY (Claude API)
 // ════════════════════════════════════════════════════════
 async function generateReply(reviewText, stars, tone, reviewerName){
-  const toneGuides={
-    warm:        'warm, personal and caring — like a friend who owns the salon',
-    professional:'professional and polished but still approachable and friendly',
-    friendly:    'light, friendly and upbeat — conversational everyday Indian English',
-    grateful:    'genuinely grateful and heartfelt — the owner really appreciates this customer',
+  // FIX: Check for API key
+  if(!CLAUDE_API_KEY){
+    console.warn('Claude API key not set. Using fallback reply.');
+    return buildFallback(reviewerName, stars, reviewText, tone);
+  }
+
+  const toneGuides = {
+    warm: 'warm, personal and caring — like a friend who owns the salon',
+    professional: 'professional and polished but still approachable and friendly',
+    friendly: 'light, friendly and upbeat — conversational everyday Indian English',
+    grateful: 'genuinely grateful and heartfelt — the owner really appreciates this customer',
   };
+
   const ctx = stars<=2
     ? 'This is a negative or low-rating review. Acknowledge the concern with empathy, apologise briefly and genuinely, do NOT be defensive, and invite them back to make it right.'
     : stars===3
     ? 'This is a neutral 3-star review. Thank them, acknowledge both positives and any concern mentioned, and invite them back.'
     : 'This is a positive 4 or 5-star review. Celebrate it warmly!';
 
-  const prompt=`You are writing a Google Business Profile reply on behalf of Wonder Streaks Women's Beauty Salon in Marathahalli, Bangalore. The owner's name is not mentioned — reply as "the team" or "we".
+  const prompt = `You are writing a Google Business Profile reply on behalf of ${STATE.locationDisplayName} in Marathahalli, Bangalore. The owner's name is not mentioned — reply as "the team" or "we".
 
 REVIEWER: ${reviewerName}
 REVIEW (${stars} stars): "${reviewText||'No text — rating only'}"
@@ -1263,25 +876,43 @@ RULES:
 - ${ctx}
 - Length: 55–120 words. Short, natural and human — not corporate.
 - Use the reviewer's first name once, naturally. Do NOT start with "Dear" or "Hello [Name],".
-- Mention "Wonder Streaks" or "our salon in Marathahalli" once — important for Google local SEO.
-- If the review mentions a specific service (haircut, facial, waxing, colour, bridal, etc.) naturally mention it once — this helps Google match the reply to local service searches.
+- Mention "${STATE.locationDisplayName}" or "our salon in Marathahalli" once — important for Google local SEO.
+- If the review mentions a specific service (haircut, facial, waxing, colour, bridal, etc.) naturally mention it once.
 - End with a warm invitation to visit again.
 - NO hashtags. NO bullet points. Flowing natural text only.
 - Use simple, warm Indian English. Write like a real person, not a PR team.
 - Output ONLY the reply text. No labels, no quotes, nothing else.`;
 
-  const resp = await fetch('https://api.anthropic.com/v1/messages',{
-    method:'POST',
-    headers:{'Content-Type':'application/json'},
-    body:JSON.stringify({
-      model:'claude-sonnet-4-20250514',
-      max_tokens:300,
-      messages:[{role:'user',content:prompt}]
-    })
-  });
-  if(!resp.ok) throw new Error('Claude API '+resp.status);
-  const data = await resp.json();
-  return data.content?.find(b=>b.type==='text')?.text?.trim()||'';
+  try{
+    const resp = await fetch(CLAUDE_API_URL, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': CLAUDE_API_KEY,
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 300,
+        messages: [{role: 'user', content: prompt}]
+      })
+    });
+
+    if(!resp.ok){
+      const errorText = await resp.text();
+      throw new Error(`Claude API ${resp.status}: ${errorText}`);
+    }
+
+    const data = await resp.json();
+    const reply = data.content?.find(b=>b.type==='text')?.text?.trim() || '';
+    
+    if(!reply) throw new Error('Empty reply from API');
+    
+    return reply;
+  } catch(e){
+    console.error('Claude API error:', e);
+    throw e;
+  }
 }
 
 // ════════════════════════════════════════════════════════
@@ -1289,9 +920,11 @@ RULES:
 // ════════════════════════════════════════════════════════
 function buildFallback(name, rating, text, tone){
   const first = (name||'').split(' ')[0]||'there';
-  if(rating>=4) return `Thank you so much for this lovely review, ${first}! We're so glad you had a great experience at Wonder Streaks, Marathahalli. Your kind words mean a lot to our whole team. We'd love to see you again soon! 🌸`;
-  if(rating===3) return `Thank you for visiting us, ${first}, and for taking the time to share your feedback. We're glad parts of your experience were positive and we always want to do better. Do visit Wonder Streaks, Marathahalli again — we'd love to make it a 5-star experience for you!`;
-  return `Thank you for your feedback, ${first}. We're sorry to hear your experience at Wonder Streaks, Marathahalli didn't meet your expectations. We genuinely care about every customer and would love the chance to make this right. Please visit us again and ask for the manager — we'll take personal care of you.`;
+  const businessName = STATE.locationDisplayName || 'Wonder Streaks';
+  
+  if(rating>=4) return `Thank you so much for this lovely review, ${first}! We're so glad you had a great experience at ${businessName}, Marathahalli. Your kind words mean a lot to our whole team. We'd love to see you again soon! 🌸`;
+  if(rating===3) return `Thank you for visiting us, ${first}, and for taking the time to share your feedback. We're glad parts of your experience were positive and we always want to do better. Do visit ${businessName}, Marathahalli again — we'd love to make it a 5-star experience for you!`;
+  return `Thank you for your feedback, ${first}. We're sorry to hear your experience at ${businessName}, Marathahalli didn't meet your expectations. We genuinely care about every customer and would love the chance to make this right. Please visit us again and ask for the manager — we'll take personal care of you.`;
 }
 
 // ════════════════════════════════════════════════════════
@@ -1304,8 +937,8 @@ function setTone(el){
 }
 
 async function regenReply(){
-  const btn=document.getElementById('regenBtn');
-  const ta=document.getElementById('replyText');
+  const btn = document.getElementById('regenBtn');
+  const ta = document.getElementById('replyText');
   btn.style.opacity='.4'; btn.style.pointerEvents='none';
   ta.style.opacity='.4';
   try{
@@ -1325,24 +958,23 @@ async function regenReply(){
 function onReplyInput(){
   const val = document.getElementById('replyText').value;
   const len = val.length;
-  const el  = document.getElementById('charCount');
-  el.textContent=`${len} / 4096`;
-  el.className='char-count'+(len>4000?' over':len>3500?' warn':'');
+  const el = document.getElementById('charCount');
+  el.textContent = `${len} / 4096`;
+  el.className = 'char-count'+(len>4000?' over':len>3500?' warn':'');
 
-  // Live SEO badge
   const low = val.toLowerCase();
-  const hasMara  = low.includes('marathahalli');
-  const hasWS    = low.includes('wonder streaks');
-  const hasSvc   = /hair|skin|facial|wax|thread|colour|color|pedicure|manicure|makeup|mehendi|bridal|smoothen|spa|nail/.test(low);
-  const count    = [hasMara,hasWS,hasSvc].filter(Boolean).length;
-  const badge    = document.getElementById('seoBadge');
+  const hasMara = low.includes('marathahalli');
+  const hasWS = low.includes(STATE.locationDisplayName.toLowerCase());
+  const hasSvc = /hair|skin|facial|wax|thread|colour|color|pedicure|manicure|makeup|mehendi|bridal|smoothen|spa|nail/.test(low);
+  const count = [hasMara,hasWS,hasSvc].filter(Boolean).length;
+  const badge = document.getElementById('seoBadge');
   if(count>=2){
     badge.className='seo-badge good';
-    const found=[hasMara&&'Marathahalli',hasWS&&'Wonder Streaks',hasSvc&&'service name'].filter(Boolean);
+    const found=[hasMara&&'Marathahalli',hasWS&&STATE.locationDisplayName,hasSvc&&'service name'].filter(Boolean);
     badge.innerHTML=`✅ <strong>SEO looks great!</strong> Reply mentions ${found.join(', ')} — Google will use this for local ranking.`;
   } else {
     badge.className='seo-badge tip';
-    badge.innerHTML=`🔍 <strong>SEO tip:</strong> Try to naturally include "Wonder Streaks", "Marathahalli" and the service name — helps Google rank you higher in local search.`;
+    badge.innerHTML=`🔍 <strong>SEO tip:</strong> Try to naturally include "${STATE.locationDisplayName}", "Marathahalli" and the service name — helps Google rank you higher in local search.`;
   }
 }
 
@@ -1357,36 +989,49 @@ async function postReply(){
   }
   hideErr('replyErrBanner');
 
-  // Show overlay
   document.getElementById('postingOverlay').classList.add('on');
   document.getElementById('postLabel').textContent='Posting your reply to Google...';
   document.getElementById('btnPost').disabled=true;
 
   try{
-    // FIX BUG-05: reviewName from API is full resource path "accounts/X/locations/Y/reviews/Z"
-    // GBP_BASE = "https://mybusiness.googleapis.com/v4"
-    // Correct URL: mybusiness.googleapis.com/v4/accounts/X/locations/Y/reviews/Z/reply
-    const reviewName = STATE.activeReview.name; // already full path, no base URL
+    // FIX: Correct API endpoint format for posting replies
+    // Format: PUT /v4/{name}/reply where name is the full review resource path
+    const reviewName = STATE.activeReview.name; // e.g. "accounts/123/locations/456/reviews/789"
     const replyUrl = `${GBP_BASE}/${reviewName}/reply`;
 
-    const result = await gFetch(replyUrl, 'PUT', { comment: replyTxt });
+    // FIX: Correct request body format - API expects reviewReply object
+    const result = await gFetch(replyUrl, 'PUT', {
+      reviewReply: {
+        comment: replyTxt
+      }
+    });
 
     // Mark as replied in local state
     const idx = STATE.reviews.findIndex(r=>r.reviewId===STATE.activeReview.reviewId);
-    if(idx>=0){ STATE.reviews[idx].replied=true; STATE.reviews[idx].replyText=replyTxt; }
+    if(idx>=0){
+      STATE.reviews[idx].replied = true;
+      STATE.reviews[idx].replyText = replyTxt;
+    }
 
     document.getElementById('postingOverlay').classList.remove('on');
     document.getElementById('btnPost').disabled=false;
 
-    // FIX BUG-15: use innerHTML with <br> — textContent ignores \n
-    document.getElementById('successSub').innerHTML=
-      `Your reply to <strong>${esc(STATE.activeReview.reviewer)}</strong> is now live on Google.<br>This helps your ranking in local search. 🌸`;
+    document.getElementById('successSub').innerHTML = `Your reply to <strong>${esc(STATE.activeReview.reviewer)}</strong> is now live on Google.<br>This helps your ranking in local search. 🌸`;
     showScreen('scSuccess');
 
   } catch(e){
     document.getElementById('postingOverlay').classList.remove('on');
     document.getElementById('btnPost').disabled=false;
-    showErr('replyErrBanner','Failed to post reply: '+e.message+'. Check your internet connection and try again.');
+    
+    // FIX: Better error messages
+    let errorMsg = 'Failed to post reply: ' + e.message;
+    if(e.message.includes('403')){
+      errorMsg += ' Make sure your Business Profile location is verified and you have permission to reply.';
+    } else if(e.message.includes('401')){
+      errorMsg += ' Your session expired. Please sign in again.';
+    }
+    
+    showErr('replyErrBanner', errorMsg);
   }
 }
 
@@ -1398,37 +1043,60 @@ function afterSuccess(){
 // ════════════════════════════════════════════════════════
 // GOOGLE API FETCH HELPER
 // ════════════════════════════════════════════════════════
-async function gFetch(url, method='GET', body=null){
+async function gFetch(url, method='GET', body=null, retries=3){
   if(!STATE.accessToken) throw new Error('Not authenticated — please sign in again.');
+  
   const opts = {
     method,
-    headers:{
-      'Authorization':'Bearer '+STATE.accessToken,
-      'Content-Type':'application/json',
+    headers: {
+      'Authorization': 'Bearer '+STATE.accessToken,
+      'Content-Type': 'application/json',
     }
   };
   if(body) opts.body = JSON.stringify(body);
-  const resp = await fetch(url, opts);
-  const text = await resp.text();
-  if(!resp.ok){
-    let msg = resp.status+' '+resp.statusText;
-    try{ const j=JSON.parse(text); msg=(j.error?.message||j.error||msg); }catch(_){}
-    // FIX BUG-13: On 401, attempt silent re-auth via existing tokenClient
-    if(resp.status===401){
-      STATE.accessToken='';
-      document.getElementById('hdrUser').classList.remove('on');
-      if(_tokenClient){
-        // Try silent re-auth — will trigger popup if needed
-        _tokenClient.requestAccessToken();
-        throw new Error('Session expired — re-authenticating. Please try again in a moment.');
+
+  try{
+    const resp = await fetch(url, opts);
+    const text = await resp.text();
+    
+    if(!resp.ok){
+      let msg = resp.status+' '+resp.statusText;
+      try{
+        const j = JSON.parse(text);
+        msg = j.error?.message || j.error?.errors?.[0]?.message || msg;
+      } catch(_){}
+
+      // FIX: Handle 401 with token refresh
+      if(resp.status===401){
+        STATE.accessToken='';
+        document.getElementById('hdrUser').classList.remove('on');
+        if(_tokenClient){
+          _firstSignIn = false; // Try silent refresh
+          _tokenClient.requestAccessToken();
+          throw new Error('Session expired — re-authenticating. Please try again in a moment.');
+        }
+        showScreen('scSignIn');
+        throw new Error('Session expired. Please sign in again.');
       }
-      showScreen('scSignIn');
-      throw new Error('Session expired. Please sign in again.');
+
+      // FIX: Handle rate limiting with retry
+      if(resp.status===429 && retries > 0){
+        const delay = 1000 * Math.pow(2, 3-retries);
+        await new Promise(r => setTimeout(r, delay));
+        return gFetch(url, method, body, retries-1);
+      }
+
+      throw new Error(msg);
     }
-    throw new Error(msg);
+    
+    if(!text) return {};
+    return JSON.parse(text);
+  } catch(e){
+    if(e.message.includes('Failed to fetch') || e.message.includes('NetworkError')){
+      throw new Error('Network error. Check your internet connection and try again.');
+    }
+    throw e;
   }
-  if(!text) return {};
-  return JSON.parse(text);
 }
 
 // ════════════════════════════════════════════════════════
@@ -1440,7 +1108,7 @@ function animateGen(){
     ['Reading the review','Understanding what the customer experienced...'],
     ['Identifying key points','Picking up on what they mentioned...'],
     ['Crafting your reply','Making it warm, natural and SEO-optimised...'],
-    ['Adding Google keywords','Helping Wonder Streaks rank higher locally...'],
+    ['Adding Google keywords','Helping your business rank higher locally...'],
     ['Polishing the tone','Almost ready — just a moment!'],
   ];
   let i=0;
@@ -1470,7 +1138,7 @@ function fmtDate(iso){
   try{ return new Date(iso).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}); }
   catch(_){ return iso.slice(0,10); }
 }
-function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
 
 function showErr(id, msg){ const el=document.getElementById(id); if(el){el.textContent=msg;el.style.display='block';} }

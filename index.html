@@ -209,35 +209,93 @@ button,input,label,textarea{-webkit-appearance:none;appearance:none;font-family:
 </header>
 
 <!-- ══════════════════════════════════════════
-     SCREEN: ORIGIN WARNING (shown if file:// or no HTTPS)
+     SCREEN: IFRAME WARNING (shown when inside any iframe/preview/embed)
+     This is the PRIMARY fix for the redirect_uri_mismatch error seen in
+     Claude artifacts, Codepen, and any other iframe preview context.
+════════════════════════════════════════════ -->
+<div class="screen" id="scIframeWarn">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:12px 4px;">
+    <div style="font-size:52px">🚫</div>
+    <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;text-align:center;color:var(--dark)">Google Sign-In won't work<br><em style="color:var(--rose)">inside a preview</em></div>
+    <div style="font-size:12px;color:var(--muted);text-align:center;line-height:1.7;max-width:340px;">
+      This tool is currently running inside an <strong>iframe or preview window</strong> (e.g. Claude, CodePen, Replit). Google OAuth blocks sign-in from these environments — it's a Google security restriction, not a bug in this tool.
+    </div>
+
+    <div class="card" style="width:100%;padding:14px;">
+      <div style="font-size:12px;font-weight:700;color:var(--dark);margin-bottom:10px;">✅ How to use this tool correctly</div>
+
+      <div class="setup-step" style="padding:7px 0;">
+        <div class="step-num" style="width:24px;height:24px;font-size:11px;flex-shrink:0;">1</div>
+        <div class="step-body">
+          <div class="step-title">Download the HTML file</div>
+          <div class="step-desc">Click the download button on this file in Claude → save it to your computer as <code>wonder-streaks-gmb.html</code></div>
+        </div>
+      </div>
+
+      <div class="setup-step" style="padding:7px 0;">
+        <div class="step-num" style="width:24px;height:24px;font-size:11px;flex-shrink:0;">2</div>
+        <div class="step-body">
+          <div class="step-title">Host it on GitHub Pages (free)</div>
+          <div class="step-desc">
+            Go to <a href="https://github.com" target="_blank">github.com</a> → New repo → name it <code>ws-gmb</code> → Public → upload this file as <code>index.html</code>.<br>
+            Then: <strong>Settings → Pages → Branch: main → Save</strong>.<br>
+            Your live URL: <code>https://yourusername.github.io/ws-gmb/</code>
+          </div>
+        </div>
+      </div>
+
+      <div class="setup-step" style="padding:7px 0;">
+        <div class="step-num" style="width:24px;height:24px;font-size:11px;flex-shrink:0;">3</div>
+        <div class="step-body">
+          <div class="step-title">Add your GitHub Pages URL to Google Cloud</div>
+          <div class="step-desc">In Google Cloud Console → Credentials → your OAuth client → <strong>Authorised JavaScript origins</strong> → add <code>https://yourusername.github.io</code> (no trailing slash) → Save. Wait 5–10 min.</div>
+        </div>
+      </div>
+
+      <div class="setup-step" style="padding:7px 0;border:none;">
+        <div class="step-num" style="width:24px;height:24px;font-size:11px;flex-shrink:0;">4</div>
+        <div class="step-body">
+          <div class="step-title">Open the GitHub Pages URL directly</div>
+          <div class="step-desc">Open <code>https://yourusername.github.io/ws-gmb/</code> in a <strong>new browser tab</strong> — not inside Claude. Google Sign-In will work perfectly from there.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="tip-box" style="width:100%">
+      ⚡ <strong>Already hosted?</strong> Open your hosted URL in a new tab — do not use the Claude preview window to sign in.
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: ORIGIN WARNING (shown if opened as file://)
 ════════════════════════════════════════════ -->
 <div class="screen" id="scOriginWarn">
   <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px 4px;">
     <div style="font-size:48px">⚠️</div>
-    <div style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;text-align:center;color:var(--dark)">This page needs to be<br><em style="color:var(--rose)">hosted online first</em></div>
+    <div style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;text-align:center;color:var(--dark)">This file needs to be<br><em style="color:var(--rose)">hosted on HTTPS</em></div>
     <div style="font-size:11.5px;color:var(--muted);text-align:center;line-height:1.65;max-width:320px">
-      Google OAuth <strong>cannot work</strong> when the file is opened directly from your computer (<code style="font-size:10px;background:var(--rose-ll);padding:1px 4px;border-radius:3px">file://</code>). It requires an <strong>https://</strong> web address.
+      You've opened this file directly from your computer (<code style="font-size:10px;background:var(--rose-ll);padding:1px 4px;border-radius:3px">file://</code>). Google Sign-In requires an <strong>https://</strong> address. Host it on GitHub Pages first.
     </div>
     <div class="card" style="width:100%;padding:12px 13px;">
-      <div style="font-size:11px;font-weight:700;color:var(--dark);margin-bottom:8px;">✅ Easiest free option — GitHub Pages</div>
+      <div style="font-size:11px;font-weight:700;color:var(--dark);margin-bottom:8px;">✅ Host free on GitHub Pages</div>
       <div class="setup-step" style="padding:6px 0">
         <div class="step-num" style="width:22px;height:22px;font-size:10px">1</div>
-        <div class="step-body"><div class="step-desc">Go to <a href="https://github.com" target="_blank">github.com</a> → sign in (or create free account)</div></div>
+        <div class="step-body"><div class="step-desc">Go to <a href="https://github.com" target="_blank">github.com</a> → sign in or create a free account</div></div>
       </div>
       <div class="setup-step" style="padding:6px 0">
         <div class="step-num" style="width:22px;height:22px;font-size:10px">2</div>
-        <div class="step-body"><div class="step-desc">Create a <strong>new repository</strong> → name it <code>wonder-streaks</code> → set Public</div></div>
+        <div class="step-body"><div class="step-desc">New repo → name it <code>ws-gmb</code> → Public → upload this file as <code>index.html</code></div></div>
       </div>
       <div class="setup-step" style="padding:6px 0">
         <div class="step-num" style="width:22px;height:22px;font-size:10px">3</div>
-        <div class="step-body"><div class="step-desc">Upload this HTML file → rename it to <code>index.html</code></div></div>
+        <div class="step-body"><div class="step-desc"><strong>Settings → Pages → Source: main branch</strong> → Save</div></div>
       </div>
       <div class="setup-step" style="padding:6px 0;border:none">
         <div class="step-num" style="width:22px;height:22px;font-size:10px">4</div>
-        <div class="step-body"><div class="step-desc">Go to repo <strong>Settings → Pages → Source: main branch</strong> → Save. Your URL will be:<br><code>https://yourusername.github.io/wonder-streaks/</code></div></div>
+        <div class="step-body"><div class="step-desc">Open <code>https://yourusername.github.io/ws-gmb/</code> in your browser — Sign-In will work!</div></div>
       </div>
     </div>
-    <div class="tip-box" style="width:100%">💡 Open that <strong>https://</strong> URL in your browser and run the setup from there. Google Sign-In will work correctly.</div>
   </div>
 </div>
 
@@ -533,21 +591,53 @@ let STATE = {
 // INIT
 // ════════════════════════════════════════════════════════
 // FIX BUG-01/02/12: GIS onload callback — initialises tokenClient safely
-// FIX BUG-16: Detect file:// or null origin before anything else
+// FIX BUG-16 (extended): Detect ALL contexts where Google OAuth is impossible:
+//   - file:// local files
+//   - iframe / embedded frames (Claude artifacts, Codepen, etc.)
+//   - sandbox origins that don't match a registered JS origin
 function detectOriginIssues(){
-  const proto = window.location.protocol;
-  const origin = window.location.origin;
+  const proto   = window.location.protocol;
+  const origin  = window.location.origin;
 
-  // file:// opened locally — Google OAuth will never work
+  // 1. Opened as local file
   if(proto === 'file:'){
     showScreen('scOriginWarn');
     return true;
   }
-  // Embedded in an iframe with a null/opaque origin
+
+  // 2. Null/opaque origin (sandboxed iframe without allow-same-origin)
   if(origin === 'null' || origin === 'null '){
-    showScreen('scOriginWarn');
+    showScreen('scIframeWarn');
     return true;
   }
+
+  // 3. Running inside an iframe (window.top !== window.self)
+  //    This covers Claude artifacts, Codepen embeds, iframes of any kind.
+  //    Google GIS token model popup checks the TOP-LEVEL opener origin,
+  //    which would be the embedding site (e.g. claude.ai) — never registered.
+  try {
+    if(window.self !== window.top){
+      showScreen('scIframeWarn');
+      return true;
+    }
+  } catch(e) {
+    // Cross-origin iframe: accessing window.top throws → definitely in iframe
+    showScreen('scIframeWarn');
+    return true;
+  }
+
+  // 4. Known sandbox domains from common iframe preview services
+  const sandboxPatterns = [
+    'claude.ai', 'anthropic.com', 'codesandbox.io', 'codepen.io',
+    'stackblitz.com', 'jsfiddle.net', 'glitch.me', 'replit.com',
+    'webcontainer', 'csb.app', 'vercel.app/preview'
+  ];
+  const isSandbox = sandboxPatterns.some(p => origin.includes(p));
+  if(isSandbox){
+    showScreen('scIframeWarn');
+    return true;
+  }
+
   return false;
 }
 

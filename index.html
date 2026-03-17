@@ -377,9 +377,20 @@ button,input,label,textarea{-webkit-appearance:none;appearance:none;font-family:
 
       <div style="margin-top:8px;display:flex;flex-direction:column;gap:8px;">
         <label class="input-label">Google OAuth Client ID</label>
-        <input class="txt-input" id="clientIdInput" placeholder="Paste your Client ID here..." autocomplete="off" oninput="checkClientId()">
-        <div id="clientIdErr" style="font-size:10px;color:#c00;display:none;margin-top:-4px;">Please enter a valid Client ID (ends with .apps.googleusercontent.com)</div>
-        <button class="btn-primary" id="btnSaveClientId" onclick="saveClientId()" disabled>Save &amp; Continue →</button>
+        <!-- BUG-C1/C7 FIX: use textarea to avoid browser autocomplete mangling; oninput sanitises -->
+        <textarea class="txt-input" id="clientIdInput"
+          rows="2" style="resize:none;font-family:monospace;font-size:11.5px;line-height:1.5"
+          placeholder="Paste your Client ID here&#10;e.g. 123456789012-abcde...apps.googleusercontent.com"
+          autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"
+          oninput="checkClientId()"></textarea>
+        <!-- Live validation feedback -->
+        <div id="clientIdStatus" style="font-size:10.5px;display:none;border-radius:8px;padding:6px 10px;line-height:1.5;"></div>
+        <div style="display:flex;gap:7px;">
+          <button class="btn-primary" id="btnSaveClientId" onclick="saveClientId()" disabled style="flex:1">Save &amp; Continue →</button>
+          <button class="btn-secondary" style="flex:0 0 auto;padding:10px 12px;font-size:11px" onclick="clearClientId()" title="Clear saved Client ID">🗑 Clear</button>
+        </div>
+        <!-- BUG-C6 FIX: show what's currently saved so user can spot stale bad value -->
+        <div id="savedClientIdPreview" style="display:none;font-size:10px;color:var(--muted);padding:5px 8px;background:var(--rose-ll);border-radius:7px;word-break:break-all;font-family:monospace;"></div>
       </div>
     </div>
 
@@ -401,25 +412,28 @@ button,input,label,textarea{-webkit-appearance:none;appearance:none;font-family:
       Sign in with <strong>mywonderstreaks@gmail.com</strong> — the account that manages Wonder Streaks on Google.
     </div>
 
-    <!-- BUG-16 FIX: Show current origin so user can verify it matches Google Cloud Console -->
+    <!-- Origin display -->
     <div id="originVerifyBox" style="display:none;width:100%;background:var(--blue-l);border:1px solid var(--blue-b);border-radius:10px;padding:9px 12px;font-size:10.5px;color:var(--blue);line-height:1.6;">
-      <strong>⚙️ Registered origin:</strong> <span id="originVerifyUrl" style="font-family:monospace;font-size:10px;word-break:break-all;"></span><br>
-      <span style="color:var(--muted)">Make sure this exact URL is in your <strong>Authorised JavaScript origins</strong> in Google Cloud Console.</span>
+      <strong>⚙️ Your page origin:</strong> <span id="originVerifyUrl" style="font-family:monospace;font-size:10px;word-break:break-all;"></span><br>
+      <span style="color:var(--muted)">This exact URL must be in Google Cloud → OAuth client → <strong>Authorised JavaScript origins</strong>.</span>
     </div>
 
-    <!-- BUG-12 FIX: Button disabled until GIS loads, shows loading state -->
+    <!-- BUG-C6 FIX: Show masked client ID so user can verify correct one is saved -->
+    <div id="signinClientPreview" style="display:none;width:100%;background:var(--green-l);border:1px solid var(--green-b);border-radius:10px;padding:8px 12px;font-size:10.5px;color:var(--green);line-height:1.6;word-break:break-all;">
+      <strong>✅ Client ID:</strong> <span id="signinClientText" style="font-family:monospace;font-size:10px;"></span>
+    </div>
+
     <button class="g-signin-btn" id="btnGoogleSignIn" onclick="doGoogleSignIn()" disabled style="opacity:.6">
       <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.16C6.51 42.62 14.62 48 24 48z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.16C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.75l7.97-6.16z"/><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.16C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
       <span id="signinBtnLabel">Loading Google Sign-In...</span>
     </button>
 
-    <button class="btn-ghost" onclick="showScreen('scSetup')">← Change setup / Client ID</button>
+    <button class="btn-ghost" onclick="showScreen('scSetup')">← Change Client ID</button>
 
     <div id="signinErr" class="err-banner" style="display:none;width:100%;"></div>
 
-    <!-- BUG-19 FIX: Propagation delay reminder visible on sign-in screen -->
     <div class="tip-box" style="width:100%;font-size:10px">
-      ⏱ <strong>Just updated Google Cloud Console?</strong> Wait 5–10 minutes before signing in — Google needs time to activate new settings.
+      ⏱ <strong>Just updated Google Cloud Console?</strong> Wait 5–10 minutes before signing in — Google takes time to activate new settings.
     </div>
   </div>
 </div>
@@ -674,13 +688,14 @@ function displayOriginHints(){
 
 function onGisLoad(){
   gisReady = true;
-  // FIX BUG-12: Enable sign-in button and update label now that GIS is ready
   const btn = document.getElementById('btnGoogleSignIn');
   if(btn){ btn.disabled = false; btn.style.opacity = '1'; }
   const lbl = document.getElementById('signinBtnLabel');
   if(lbl) lbl.textContent = 'Continue with Google';
   // Pre-init tokenClient if clientId already saved
   if(STATE.clientId) initTokenClient();
+  // BUG-C6 FIX: ensure client preview is shown (may have loaded after init ran)
+  updateSignInClientPreview();
 }
 
 function initTokenClient(){
@@ -717,10 +732,23 @@ function initTokenClient(){
   const btn = document.getElementById('btnGoogleSignIn');
   if(btn){ btn.disabled = true; btn.style.opacity = '0.6'; }
 
-  // Pre-fill saved client ID and navigate appropriately
+  // BUG-C6 FIX: Pre-fill saved client ID with validation + preview
   if(STATE.clientId){
-    document.getElementById('clientIdInput').value = STATE.clientId;
+    const inp = document.getElementById('clientIdInput');
+    if(inp) inp.value = STATE.clientId;
     checkClientId();
+
+    // Show what's currently saved in the setup screen
+    const prev = document.getElementById('savedClientIdPreview');
+    if(prev){
+      const cid = STATE.clientId;
+      const masked = cid.length > 55 ? cid.slice(0,22)+'...'+cid.slice(-28) : cid;
+      prev.textContent = 'Currently saved: ' + masked;
+      prev.style.display = 'block';
+    }
+
+    // Navigate to sign-in and show client preview there too
+    updateSignInClientPreview();
     showScreen('scSignIn');
   }
 })();
@@ -742,22 +770,85 @@ function showScreen(id){
 // ════════════════════════════════════════════════════════
 // SETUP — CLIENT ID
 // ════════════════════════════════════════════════════════
+// ── Client ID sanitise & validate ──────────────────────────────────────
+// BUG-C1/C7 FIX: strip ALL whitespace variants, validate full format,
+//   show live feedback, distinguish Client ID vs Client Secret
+function sanitiseClientId(raw){
+  // Remove all whitespace including newlines, zero-width chars, non-breaking spaces
+  return raw.replace(/[\s​ ﻿]+/g, '');
+}
+
+function validateClientId(id){
+  if(!id) return { ok:false, msg:'Client ID is empty.' };
+  // Must end with .apps.googleusercontent.com
+  if(!id.endsWith('.apps.googleusercontent.com'))
+    return { ok:false, msg:'Must end with .apps.googleusercontent.com — check you copied the Client ID, not the Client Secret.' };
+  // Must start with a numeric project number followed by a dash
+  if(!/^\d{8,30}-/.test(id))
+    return { ok:false, msg:'Should start with numbers then a dash, e.g. 123456789012-abc... — looks like it may be incomplete or the wrong field.' };
+  // Length sanity: typical Client IDs are 70-80 chars
+  if(id.length < 50)
+    return { ok:false, msg:'Too short — a valid Client ID is usually 70+ characters. Make sure you copied the whole thing.' };
+  if(id.length > 150)
+    return { ok:false, msg:'Too long — check for accidental extra characters.' };
+  return { ok:true, msg:'✅ Client ID looks valid!' };
+}
+
 function checkClientId(){
-  const val = document.getElementById('clientIdInput').value.trim();
-  const valid = val.length > 20 && val.includes('.apps.googleusercontent.com');
-  document.getElementById('btnSaveClientId').disabled = !valid;
-  document.getElementById('clientIdErr').style.display = val.length > 10 && !valid ? 'block' : 'none';
+  const raw  = document.getElementById('clientIdInput').value;
+  const val  = sanitiseClientId(raw);
+  const res  = validateClientId(val);
+  const btn  = document.getElementById('btnSaveClientId');
+  const stat = document.getElementById('clientIdStatus');
+
+  btn.disabled = !res.ok;
+
+  if(val.length < 5){
+    stat.style.display = 'none';
+    return;
+  }
+  stat.style.display  = 'block';
+  stat.style.background   = res.ok ? 'var(--green-l)' : 'var(--rose-ll)';
+  stat.style.border       = '1px solid ' + (res.ok ? 'var(--green-b)' : 'var(--blush)');
+  stat.style.color        = res.ok ? 'var(--green)' : 'var(--rose-d)';
+  stat.textContent        = res.msg;
+}
+
+function clearClientId(){
+  localStorage.removeItem('ws_gmb_clientId');
+  STATE.clientId = '';
+  _tokenClient   = null;
+  document.getElementById('clientIdInput').value = '';
+  document.getElementById('clientIdStatus').style.display = 'none';
+  document.getElementById('savedClientIdPreview').style.display = 'none';
+  document.getElementById('btnSaveClientId').disabled = true;
 }
 
 function saveClientId(){
-  const val = document.getElementById('clientIdInput').value.trim();
-  if(!val.includes('.apps.googleusercontent.com')) return;
+  const raw = document.getElementById('clientIdInput').value;
+  const val = sanitiseClientId(raw);
+  const res = validateClientId(val);
+  if(!res.ok) return;
   STATE.clientId = val;
   localStorage.setItem('ws_gmb_clientId', val);
-  // Reinit tokenClient with new clientId (FIX BUG-02)
-  _tokenClient = null;
+  _tokenClient   = null;
   if(gisReady) initTokenClient();
+  updateSignInClientPreview();
   showScreen('scSignIn');
+}
+
+// BUG-C6 FIX: show masked preview on sign-in screen so user can spot wrong value
+function updateSignInClientPreview(){
+  const id  = STATE.clientId;
+  const box = document.getElementById('signinClientPreview');
+  const txt = document.getElementById('signinClientText');
+  if(!id || !box || !txt){ if(box) box.style.display='none'; return; }
+  // Show first 20 and last 30 chars with ... in middle
+  const masked = id.length > 55
+    ? id.slice(0,22) + '...' + id.slice(-28)
+    : id;
+  txt.textContent = masked;
+  box.style.display = 'block';
 }
 
 // ════════════════════════════════════════════════════════
@@ -783,6 +874,13 @@ function doGoogleSignIn(){
     return;
   }
 
+  // BUG-C1 FIX: Final client ID sanity check before calling Google
+  const clientIdCheck = validateClientId(STATE.clientId);
+  if(!clientIdCheck.ok){
+    showErr('signinErr', 'Client ID issue: ' + clientIdCheck.msg + ' — tap "← Change Client ID" to fix it.');
+    return;
+  }
+
   _tokenClient.requestAccessToken();
 }
 
@@ -804,11 +902,21 @@ function onTokenResponse(resp){
         break;
       case 'redirect_uri_mismatch':
       case 'origin_mismatch':
-        // BUG-16/17/18 FIX: Actionable redirect_uri_mismatch message
-        msg = `Origin mismatch error. In Google Cloud Console → Credentials → your OAuth Client → "Authorised JavaScript origins", make sure this exact URL is listed: ${origin} (no trailing slash). Changes take 5–10 minutes to take effect.`;
+        msg = `Origin mismatch. In Google Cloud Console → Credentials → OAuth Client → "Authorised JavaScript origins", add exactly: ${origin}  (no trailing slash). Wait 5–10 min after saving.`;
+        break;
+      case 'invalid_client':
+        // BUG-C1-C7 FIX: Detailed actionable message for invalid_client
+        msg = 'OAuth client not found (invalid_client). This means:\n'
+            + '1. The Client ID saved here may be wrong or incomplete — tap "← Change Client ID" to check and re-paste it.\n'
+            + '2. The OAuth client may have been deleted in Google Cloud Console.\n'
+            + '3. You may have created a Desktop app instead of Web application type.\n'
+            + 'Go to Google Cloud Console → APIs & Services → Credentials and verify your OAuth 2.0 Client ID exists and is "Web application" type.';
+        // Also show the current client ID on screen so user can compare
+        const cid = STATE.clientId;
+        if(cid) msg += '\n\nClient ID currently saved: ' + cid.slice(0,25) + '...' + cid.slice(-20);
         break;
       default:
-        msg = 'Sign-in failed: ' + resp.error + (resp.error_description ? ' — ' + resp.error_description : '') + '. Check your setup and try again.';
+        msg = 'Sign-in failed: ' + resp.error + (resp.error_description ? ' — ' + resp.error_description : '') + '.\nTap "← Change Client ID" to verify your setup.';
     }
     showErr('signinErr', msg);
     return;

@@ -209,58 +209,124 @@ button,input,label,textarea{-webkit-appearance:none;appearance:none;font-family:
 </header>
 
 <!-- ══════════════════════════════════════════
+     SCREEN: ORIGIN WARNING (shown if file:// or no HTTPS)
+════════════════════════════════════════════ -->
+<div class="screen" id="scOriginWarn">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:16px 4px;">
+    <div style="font-size:48px">⚠️</div>
+    <div style="font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;text-align:center;color:var(--dark)">This page needs to be<br><em style="color:var(--rose)">hosted online first</em></div>
+    <div style="font-size:11.5px;color:var(--muted);text-align:center;line-height:1.65;max-width:320px">
+      Google OAuth <strong>cannot work</strong> when the file is opened directly from your computer (<code style="font-size:10px;background:var(--rose-ll);padding:1px 4px;border-radius:3px">file://</code>). It requires an <strong>https://</strong> web address.
+    </div>
+    <div class="card" style="width:100%;padding:12px 13px;">
+      <div style="font-size:11px;font-weight:700;color:var(--dark);margin-bottom:8px;">✅ Easiest free option — GitHub Pages</div>
+      <div class="setup-step" style="padding:6px 0">
+        <div class="step-num" style="width:22px;height:22px;font-size:10px">1</div>
+        <div class="step-body"><div class="step-desc">Go to <a href="https://github.com" target="_blank">github.com</a> → sign in (or create free account)</div></div>
+      </div>
+      <div class="setup-step" style="padding:6px 0">
+        <div class="step-num" style="width:22px;height:22px;font-size:10px">2</div>
+        <div class="step-body"><div class="step-desc">Create a <strong>new repository</strong> → name it <code>wonder-streaks</code> → set Public</div></div>
+      </div>
+      <div class="setup-step" style="padding:6px 0">
+        <div class="step-num" style="width:22px;height:22px;font-size:10px">3</div>
+        <div class="step-body"><div class="step-desc">Upload this HTML file → rename it to <code>index.html</code></div></div>
+      </div>
+      <div class="setup-step" style="padding:6px 0;border:none">
+        <div class="step-num" style="width:22px;height:22px;font-size:10px">4</div>
+        <div class="step-body"><div class="step-desc">Go to repo <strong>Settings → Pages → Source: main branch</strong> → Save. Your URL will be:<br><code>https://yourusername.github.io/wonder-streaks/</code></div></div>
+      </div>
+    </div>
+    <div class="tip-box" style="width:100%">💡 Open that <strong>https://</strong> URL in your browser and run the setup from there. Google Sign-In will work correctly.</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
      SCREEN: SETUP
 ════════════════════════════════════════════ -->
 <div class="screen on" id="scSetup">
   <div class="sa">
 
+    <!-- BUG-22 FIX: Show current origin so user knows exactly what to paste in Google Cloud -->
+    <div class="err-banner" id="originBox" style="display:none;background:var(--blue-l);border-color:var(--blue-b);color:var(--blue);font-size:11px;"></div>
+
     <div class="card">
       <span class="badge">One-time setup · 5 minutes</span>
       <div class="card-q">Connect your Google Business Profile</div>
-      <div class="card-hint" style="margin-bottom:12px">This tool reads your real reviews from Google and posts replies directly. You need a free Google Cloud OAuth key first — do this once.</div>
+      <div class="card-hint" style="margin-bottom:12px">This tool reads your real Google reviews and posts replies directly. You need a free Google Cloud OAuth key — set it up once below.</div>
 
+      <!-- BUG-17 FIX: Step 0 — host the file first -->
       <div class="setup-step">
         <div class="step-num">1</div>
         <div class="step-body">
-          <div class="step-title">Create a Google Cloud project</div>
-          <div class="step-desc">Go to <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a> → click <strong>New Project</strong> → name it <em>WonderStreaks</em> → click Create.</div>
+          <div class="step-title">Host this file on HTTPS <span style="color:var(--rose);font-size:10px">⚠️ Required</span></div>
+          <div class="step-desc">Google Sign-In <strong>only works on https:// pages</strong>, not from a local file. Host this file on GitHub Pages, Netlify, or any web server. Your page URL will be shown above once hosted.</div>
         </div>
       </div>
 
       <div class="setup-step">
         <div class="step-num">2</div>
         <div class="step-body">
-          <div class="step-title">Enable Business Profile API</div>
-          <div class="step-desc">In your project → <strong>APIs &amp; Services → Library</strong> → search <code>Business Profile API</code> → click Enable. Also enable <code>My Business Account Management API</code>.</div>
+          <div class="step-title">Create a Google Cloud project</div>
+          <div class="step-desc">Go to <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a> → <strong>New Project</strong> → name it <em>WonderStreaks</em> → Create.</div>
         </div>
       </div>
 
       <div class="setup-step">
         <div class="step-num">3</div>
         <div class="step-body">
-          <div class="step-title">Create OAuth credentials</div>
-          <div class="step-desc">Go to <strong>APIs &amp; Services → Credentials</strong> → <strong>Create Credentials → OAuth client ID</strong> → choose <em>Web application</em> → under "Authorised JavaScript origins" add the URL of this page → click Create → copy the <strong>Client ID</strong>.</div>
+          <div class="step-title">Enable the APIs</div>
+          <div class="step-desc"><strong>APIs &amp; Services → Library</strong> → search and Enable both:<br>
+          <code>My Business Account Management API</code><br>
+          <code>Google My Business API</code></div>
         </div>
       </div>
 
+      <!-- BUG-21 FIX: OAuth consent screen + test user instructions -->
       <div class="setup-step">
         <div class="step-num">4</div>
         <div class="step-body">
-          <div class="step-title">Paste your Client ID below</div>
-          <div class="step-desc">Your Client ID looks like: <code>123456789-abc...apps.googleusercontent.com</code></div>
+          <div class="step-title">Configure OAuth Consent Screen</div>
+          <div class="step-desc"><strong>APIs &amp; Services → OAuth consent screen</strong> → User type: <strong>External</strong> → fill App name &amp; email → Save.<br>
+          Then go to <strong>Test users → Add users</strong> → add <code>mywonderstreaks@gmail.com</code> → Save.<br>
+          <span style="color:var(--rose-d);font-weight:600">⚠️ Without adding yourself as a test user, Google blocks sign-in.</span></div>
         </div>
       </div>
 
-      <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px;">
+      <!-- BUG-18, 20 FIX: Explicit Web application type + JS Origins only, NOT redirect URIs -->
+      <div class="setup-step">
+        <div class="step-num">5</div>
+        <div class="step-body">
+          <div class="step-title">Create OAuth 2.0 Client ID</div>
+          <div class="step-desc">
+            <strong>APIs &amp; Services → Credentials → Create Credentials → OAuth client ID</strong><br>
+            Application type: <strong>Web application</strong> (not Desktop, not Android)<br><br>
+            Under <strong>"Authorised JavaScript origins"</strong> (NOT Redirect URIs) add your hosted URL exactly:<br>
+            <code id="originHint">https://yourusername.github.io</code><br><br>
+            <!-- BUG-19 FIX: Propagation delay warning -->
+            <span style="color:var(--gold);font-weight:600">⏱ Wait 5–10 minutes after saving before testing.</span> Google takes time to activate new origins.
+          </div>
+        </div>
+      </div>
+
+      <div class="setup-step" style="border:none">
+        <div class="step-num">6</div>
+        <div class="step-body">
+          <div class="step-title">Paste your Client ID below</div>
+          <div class="step-desc">After creating, copy the Client ID (ends with <code>.apps.googleusercontent.com</code>)</div>
+        </div>
+      </div>
+
+      <div style="margin-top:8px;display:flex;flex-direction:column;gap:8px;">
         <label class="input-label">Google OAuth Client ID</label>
         <input class="txt-input" id="clientIdInput" placeholder="Paste your Client ID here..." autocomplete="off" oninput="checkClientId()">
-        <div id="clientIdErr" style="font-size:10px;color:#c00;display:none;">Please enter a valid Client ID (ends with .apps.googleusercontent.com)</div>
-        <button class="btn-primary" id="btnSaveClientId" onclick="saveClientId()" disabled>Save &amp; Connect Google →</button>
+        <div id="clientIdErr" style="font-size:10px;color:#c00;display:none;margin-top:-4px;">Please enter a valid Client ID (ends with .apps.googleusercontent.com)</div>
+        <button class="btn-primary" id="btnSaveClientId" onclick="saveClientId()" disabled>Save &amp; Continue →</button>
       </div>
     </div>
 
     <div class="tip-box">
-      🔒 <strong>Your data stays private.</strong> The Client ID only connects this page to your Google account. No data is sent to any third party — replies are posted directly from your browser to Google.
+      🔒 <strong>Your data stays private.</strong> Your Client ID only authorises this page with your Google account. Replies post directly from your browser to Google — no third-party servers involved.
     </div>
 
   </div>
@@ -270,19 +336,33 @@ button,input,label,textarea{-webkit-appearance:none;appearance:none;font-family:
      SCREEN: SIGN IN
 ════════════════════════════════════════════ -->
 <div class="screen" id="scSignIn">
-  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:20px 0;">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px 4px;">
     <div style="font-size:48px">🌸</div>
     <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;text-align:center;color:var(--dark)">Sign in to load your<br><em style="color:var(--rose)">Google reviews</em></div>
-    <div style="font-size:11.5px;color:var(--muted);text-align:center;max-width:300px;line-height:1.6">Sign in with the Google account that owns the Wonder Streaks business profile.</div>
+    <div style="font-size:11.5px;color:var(--muted);text-align:center;max-width:300px;line-height:1.6">
+      Sign in with <strong>mywonderstreaks@gmail.com</strong> — the account that manages Wonder Streaks on Google.
+    </div>
 
-    <button class="g-signin-btn" id="btnGoogleSignIn" onclick="doGoogleSignIn()">
+    <!-- BUG-16 FIX: Show current origin so user can verify it matches Google Cloud Console -->
+    <div id="originVerifyBox" style="display:none;width:100%;background:var(--blue-l);border:1px solid var(--blue-b);border-radius:10px;padding:9px 12px;font-size:10.5px;color:var(--blue);line-height:1.6;">
+      <strong>⚙️ Registered origin:</strong> <span id="originVerifyUrl" style="font-family:monospace;font-size:10px;word-break:break-all;"></span><br>
+      <span style="color:var(--muted)">Make sure this exact URL is in your <strong>Authorised JavaScript origins</strong> in Google Cloud Console.</span>
+    </div>
+
+    <!-- BUG-12 FIX: Button disabled until GIS loads, shows loading state -->
+    <button class="g-signin-btn" id="btnGoogleSignIn" onclick="doGoogleSignIn()" disabled style="opacity:.6">
       <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.16C6.51 42.62 14.62 48 24 48z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.16C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.75l7.97-6.16z"/><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.16C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
-      Continue with Google
+      <span id="signinBtnLabel">Loading Google Sign-In...</span>
     </button>
 
-    <button class="btn-ghost" onclick="showScreen('scSetup')">← Change OAuth settings</button>
+    <button class="btn-ghost" onclick="showScreen('scSetup')">← Change setup / Client ID</button>
 
     <div id="signinErr" class="err-banner" style="display:none;width:100%;"></div>
+
+    <!-- BUG-19 FIX: Propagation delay reminder visible on sign-in screen -->
+    <div class="tip-box" style="width:100%;font-size:10px">
+      ⏱ <strong>Just updated Google Cloud Console?</strong> Wait 5–10 minutes before signing in — Google needs time to activate new settings.
+    </div>
   </div>
 </div>
 
@@ -453,23 +533,72 @@ let STATE = {
 // INIT
 // ════════════════════════════════════════════════════════
 // FIX BUG-01/02/12: GIS onload callback — initialises tokenClient safely
+// FIX BUG-16: Detect file:// or null origin before anything else
+function detectOriginIssues(){
+  const proto = window.location.protocol;
+  const origin = window.location.origin;
+
+  // file:// opened locally — Google OAuth will never work
+  if(proto === 'file:'){
+    showScreen('scOriginWarn');
+    return true;
+  }
+  // Embedded in an iframe with a null/opaque origin
+  if(origin === 'null' || origin === 'null '){
+    showScreen('scOriginWarn');
+    return true;
+  }
+  return false;
+}
+
+// FIX BUG-22: Show the current origin in setup and sign-in screens
+function displayOriginHints(){
+  const origin = window.location.origin;
+  const isLocalhost = origin.includes('localhost') || origin.includes('127.0.0.1');
+
+  // Setup screen origin box
+  const box = document.getElementById('originBox');
+  if(box){
+    box.style.display = 'block';
+    if(isLocalhost){
+      box.innerHTML = `⚙️ <strong>Current origin:</strong> <code style="font-family:monospace;font-size:10px">${origin}</code><br>Add this in Google Cloud → OAuth Client → <strong>Authorised JavaScript origins</strong>.<br><span style="color:var(--gold)">Note: localhost works for testing but production needs GitHub Pages or HTTPS.</span>`;
+      box.style.background = 'var(--gold-l)'; box.style.borderColor = '#EDD090'; box.style.color = 'var(--muted)';
+    } else {
+      box.innerHTML = `✅ <strong>Your page origin:</strong> <code style="font-family:monospace;font-size:10px">${origin}</code><br>Copy this exactly into Google Cloud → OAuth Client → <strong>Authorised JavaScript origins</strong>.`;
+      box.style.background = 'var(--green-l)'; box.style.borderColor = 'var(--green-b)'; box.style.color = 'var(--green)';
+    }
+  }
+
+  // Setup screen step-5 origin hint
+  const hint = document.getElementById('originHint');
+  if(hint) hint.textContent = origin;
+
+  // Sign-in screen origin verify box
+  const vbox = document.getElementById('originVerifyBox');
+  const vurl = document.getElementById('originVerifyUrl');
+  if(vbox && vurl){
+    vbox.style.display = 'block';
+    vurl.textContent = origin;
+  }
+}
+
 function onGisLoad(){
   gisReady = true;
-  // Enable sign-in button now that GIS is ready
+  // FIX BUG-12: Enable sign-in button and update label now that GIS is ready
   const btn = document.getElementById('btnGoogleSignIn');
-  if(btn) btn.disabled = false;
+  if(btn){ btn.disabled = false; btn.style.opacity = '1'; }
+  const lbl = document.getElementById('signinBtnLabel');
+  if(lbl) lbl.textContent = 'Continue with Google';
   // Pre-init tokenClient if clientId already saved
   if(STATE.clientId) initTokenClient();
 }
 
 function initTokenClient(){
   if(!gisReady || !STATE.clientId) return;
-  // FIX BUG-08: no error_callback — errors come through callback with resp.error
   _tokenClient = google.accounts.oauth2.initTokenClient({
     client_id: STATE.clientId,
     scope: SCOPE,
     callback: onTokenResponse,
-    // FIX BUG-09: prompt only on first sign-in
     prompt: _firstSignIn ? 'select_account' : '',
   });
 }
@@ -487,10 +616,18 @@ function initTokenClient(){
   const setVh=()=>document.documentElement.style.setProperty('--vh',(window.innerHeight*.01)+'px');
   setVh(); window.addEventListener('resize',setVh);
   window.addEventListener('orientationchange',()=>setTimeout(setVh,200));
-  // FIX BUG-12: Disable sign-in button until GIS ready
+
+  // FIX BUG-16: Check protocol first — show hosting guide if file://
+  if(detectOriginIssues()) return;
+
+  // FIX BUG-22: Display current origin in setup + sign-in screens
+  displayOriginHints();
+
+  // FIX BUG-12: Sign-in button starts disabled until GIS loads
   const btn = document.getElementById('btnGoogleSignIn');
-  if(btn) btn.disabled = true;
-  // Pre-fill saved client ID
+  if(btn){ btn.disabled = true; btn.style.opacity = '0.6'; }
+
+  // Pre-fill saved client ID and navigate appropriately
   if(STATE.clientId){
     document.getElementById('clientIdInput').value = STATE.clientId;
     checkClientId();
@@ -562,11 +699,27 @@ function doGoogleSignIn(){
 // FIX BUG-08: onTokenResponse handles both success and error (no separate error_callback)
 function onTokenResponse(resp){
   if(resp && resp.error){
-    let msg = resp.error;
-    if(resp.error === 'popup_closed_by_user') msg = 'Sign-in was cancelled. Please try again.';
-    else if(resp.error === 'access_denied') msg = 'Access was denied. Please grant the required permissions.';
-    else if(resp.error === 'invalid_client') msg = 'Invalid Client ID. Please check your OAuth Client ID in setup.';
-    else msg = 'Sign-in failed: '+resp.error+(resp.error_description?' — '+resp.error_description:'');
+    let msg = '';
+    const origin = window.location.origin;
+    switch(resp.error){
+      case 'popup_closed_by_user':
+      case 'popup_failed_to_open':
+        msg = 'Sign-in popup was closed or blocked. Please allow popups for this site and try again.';
+        break;
+      case 'access_denied':
+        msg = 'Permission denied. Make sure you added mywonderstreaks@gmail.com as a Test User in Google Cloud Console → OAuth consent screen → Test users.';
+        break;
+      case 'invalid_client':
+        msg = 'Invalid Client ID. Double-check the Client ID you pasted in setup — it should end with .apps.googleusercontent.com.';
+        break;
+      case 'redirect_uri_mismatch':
+      case 'origin_mismatch':
+        // BUG-16/17/18 FIX: Actionable redirect_uri_mismatch message
+        msg = `Origin mismatch error. In Google Cloud Console → Credentials → your OAuth Client → "Authorised JavaScript origins", make sure this exact URL is listed: ${origin} (no trailing slash). Changes take 5–10 minutes to take effect.`;
+        break;
+      default:
+        msg = 'Sign-in failed: ' + resp.error + (resp.error_description ? ' — ' + resp.error_description : '') + '. Check your setup and try again.';
+    }
     showErr('signinErr', msg);
     return;
   }
@@ -574,7 +727,7 @@ function onTokenResponse(resp){
     showErr('signinErr','No access token received. Please try again.');
     return;
   }
-  _firstSignIn = false;  // FIX BUG-09: subsequent sign-ins skip consent screen
+  _firstSignIn = false;
   STATE.accessToken = resp.access_token;
   loadUserAndReviews();
 }

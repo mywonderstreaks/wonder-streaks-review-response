@@ -1,0 +1,1021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Wonder Streaks · GMB Review Manager</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://accounts.google.com/gsi/client" async defer onload="onGisLoad()"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --rose:#D4567A;--rose-d:#A8334F;--rose-l:#FDEEF3;--rose-ll:#FFF5F8;
+  --blush:#F8D0DB;--cream:#FFF9F5;--gold:#C9922A;--gold-l:#FFF5DC;
+  --dark:#1C0F14;--muted:#8C6070;--card:#FFFCF9;--bdr:#F0D5DF;
+  --green:#1a7a3a;--green-l:#e8f8ef;--green-b:#7fc99a;
+  --blue:#1a5fb4;--blue-l:#e8f0fe;--blue-b:#93b4e8;
+  --shadow:0 4px 24px rgba(212,86,122,.09),0 1px 4px rgba(212,86,122,.04);
+}
+html,body{height:100%;overflow:hidden;background:var(--cream);-webkit-font-smoothing:antialiased;overscroll-behavior:none;}
+body{font-family:'Poppins',sans-serif;color:var(--dark);}
+button,input,label,textarea{-webkit-appearance:none;appearance:none;font-family:'Poppins',sans-serif;}
+
+/* ── root ── */
+#app{position:relative;width:100%;height:100vh;height:100dvh;overflow:hidden;background:var(--cream);}
+.bg-g{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:0;
+  background:radial-gradient(ellipse 55% 40% at 95% 5%,rgba(212,86,122,.08) 0%,transparent 60%),
+    radial-gradient(ellipse 45% 35% at 0% 95%,rgba(201,146,42,.07) 0%,transparent 55%),
+    radial-gradient(ellipse 30% 25% at 50% 50%,rgba(248,208,219,.12) 0%,transparent 60%);}
+.bg-p{position:absolute;top:0;left:0;right:0;bottom:0;pointer-events:none;z-index:0;overflow:hidden;}
+.fp{position:absolute;opacity:0;animation:rise linear infinite}
+@keyframes rise{0%{transform:translateY(110vh) rotate(0deg) scale(.7);opacity:0}8%{opacity:.18}85%{opacity:.1}100%{transform:translateY(-8vh) rotate(380deg) scale(1.1);opacity:0}}
+
+/* ── shell ── */
+.shell{position:relative;z-index:2;width:100%;max-width:500px;height:100%;margin:0 auto;padding:0 12px;display:flex;flex-direction:column;overflow:hidden;}
+
+/* ── header ── */
+.hdr{flex-shrink:0;text-align:center;padding:10px 0 4px;}
+.hdr-name{font-family:'Playfair Display',serif;font-size:10px;letter-spacing:.28em;text-transform:uppercase;color:var(--rose);display:flex;align-items:center;justify-content:center;gap:7px;margin-bottom:2px;}
+.hdr-name::before,.hdr-name::after{content:'';width:22px;height:1px;background:var(--blush);display:inline-block}
+.hdr-title{font-family:'Playfair Display',serif;font-size:clamp(.95rem,3.5vw,1.15rem);font-weight:700;color:var(--dark);}
+.hdr-title em{color:var(--rose);font-style:italic}
+.hdr-sub{font-size:9.5px;color:var(--muted);margin-top:1px;}
+.hdr-user{display:none;align-items:center;gap:7px;justify-content:center;margin-top:5px;padding:4px 10px;background:var(--green-l);border:1px solid var(--green-b);border-radius:20px;}
+.hdr-user.on{display:flex;}
+.hdr-user-name{font-size:10.5px;font-weight:600;color:var(--green);}
+.hdr-signout{font-size:9px;color:var(--muted);text-decoration:underline;cursor:pointer;background:none;border:none;}
+
+/* ── screens ── */
+.screen{display:none;flex-direction:column;flex:1;min-height:0;}
+.screen.on{display:flex;animation:sIn .3s cubic-bezier(.22,1,.36,1) both;}
+@keyframes sIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
+
+/* ── scroll area ── */
+.sa{flex:1;overflow-y:auto;min-height:0;display:flex;flex-direction:column;gap:10px;padding-bottom:8px;}
+.sa::-webkit-scrollbar{width:3px}
+.sa::-webkit-scrollbar-thumb{background:var(--blush);border-radius:4px}
+
+/* ── cards ── */
+.card{background:var(--card);border:1.5px solid var(--bdr);border-radius:16px;padding:14px 13px;box-shadow:var(--shadow);position:relative;}
+.card::before{content:'';position:absolute;top:0;left:15%;right:15%;height:2.5px;background:linear-gradient(90deg,transparent,var(--rose),var(--gold),var(--rose),transparent);border-radius:0 0 4px 4px;opacity:.45;}
+.card-q{font-family:'Playfair Display',serif;font-size:clamp(.88rem,3vw,1rem);font-weight:700;color:var(--dark);margin-bottom:3px;}
+.card-hint{font-size:10px;color:var(--muted);line-height:1.5;}
+.badge{display:inline-flex;align-items:center;gap:4px;background:linear-gradient(135deg,var(--rose),var(--rose-d));color:#fff;font-size:8px;font-weight:700;letter-spacing:.07em;padding:2px 9px;border-radius:100px;margin-bottom:5px;}
+
+/* ── setup steps ── */
+.setup-step{display:flex;gap:11px;padding:10px 0;border-bottom:1px solid var(--bdr);}
+.setup-step:last-child{border-bottom:none;}
+.step-num{width:26px;height:26px;border-radius:50%;background:linear-gradient(135deg,var(--rose),var(--rose-d));color:#fff;font-size:11px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
+.step-body{flex:1;}
+.step-title{font-size:12.5px;font-weight:700;color:var(--dark);margin-bottom:2px;}
+.step-desc{font-size:11px;color:var(--muted);line-height:1.55;}
+.step-desc a{color:var(--rose);text-decoration:none;}
+.step-desc code{background:var(--rose-ll);border:1px solid var(--blush);border-radius:4px;padding:1px 5px;font-size:10.5px;font-family:monospace;color:var(--rose-d);}
+
+/* ── input ── */
+.txt-input{width:100%;border:1.5px solid var(--bdr);border-radius:10px;background:#FFFCFA;padding:9px 12px;font-size:13px;color:var(--dark);outline:none;transition:border-color .18s;}
+.txt-input:focus{border-color:var(--rose);}
+.txt-input::placeholder{color:#C4A0AE;font-size:12px;}
+.input-label{font-size:10.5px;font-weight:600;color:var(--muted);margin-bottom:4px;display:block;}
+
+/* ── buttons ── */
+.btn-primary{width:100%;background:linear-gradient(135deg,var(--rose),var(--rose-d));color:#fff;border:none;border-radius:11px;padding:12px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:all .15s;}
+.btn-primary:active{transform:scale(.98);}
+.btn-primary:disabled{opacity:.38;cursor:not-allowed;}
+.btn-secondary{width:100%;background:none;border:1.5px solid var(--bdr);border-radius:11px;padding:10px;font-size:12.5px;font-weight:600;color:var(--muted);cursor:pointer;display:flex;align-items:center;justify-content:center;gap:7px;transition:all .15s;}
+.btn-secondary:active{border-color:var(--rose);color:var(--rose);}
+.btn-ghost{background:none;border:none;font-size:11px;color:var(--muted);text-decoration:underline;cursor:pointer;padding:3px 0;}
+.btn-back{background:none;border:1.5px solid var(--bdr);border-radius:11px;padding:10px 13px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;display:flex;align-items:center;gap:4px;white-space:nowrap;}
+.btn-back:active{color:var(--rose);border-color:var(--rose);}
+.btn-regen{background:var(--rose-ll);border:1.5px solid var(--blush);border-radius:9px;padding:6px 11px;cursor:pointer;font-size:11px;font-weight:600;color:var(--rose-d);display:flex;align-items:center;gap:5px;transition:all .15s;}
+.btn-regen:active{opacity:.6;}
+
+/* ── google sign-in button ── */
+.g-signin-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;padding:11px 16px;background:#fff;border:1.5px solid var(--bdr);border-radius:11px;cursor:pointer;font-size:13px;font-weight:600;color:var(--dark);transition:all .18s;box-shadow:0 2px 8px rgba(0,0,0,.08);}
+.g-signin-btn:hover{border-color:var(--rose);box-shadow:0 3px 14px rgba(212,86,122,.15);}
+.g-signin-btn svg{flex-shrink:0;}
+
+/* ── review list ── */
+.review-item{background:var(--card);border:1.5px solid var(--bdr);border-radius:14px;padding:12px 13px;cursor:pointer;transition:all .18s;position:relative;}
+.review-item:active{border-color:var(--rose);background:var(--rose-ll);}
+.review-item.replied{opacity:.6;cursor:default;}
+.ri-top{display:flex;align-items:center;gap:9px;margin-bottom:6px;}
+.ri-avatar{width:32px;height:32px;border-radius:50%;background:linear-gradient(135deg,var(--rose),var(--rose-d));display:flex;align-items:center;justify-content:center;color:#fff;font-size:13px;font-weight:700;flex-shrink:0;}
+.ri-name{font-size:12.5px;font-weight:700;color:var(--dark);flex:1;}
+.ri-stars{font-size:11px;letter-spacing:1px;}
+.ri-date{font-size:10px;color:var(--muted);}
+.ri-text{font-size:12px;color:var(--muted);line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.ri-arrow{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--blush);}
+.replied-badge{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:700;color:var(--green);background:var(--green-l);border:1px solid var(--green-b);border-radius:6px;padding:2px 7px;}
+.new-badge{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:700;color:var(--rose-d);background:var(--rose-ll);border:1px solid var(--blush);border-radius:6px;padding:2px 7px;}
+
+/* ── filter tabs ── */
+.filter-tabs{display:flex;background:var(--rose-ll);border:1.5px solid var(--blush);border-radius:12px;padding:3px;gap:3px;flex-shrink:0;}
+.ftab{flex:1;padding:7px 4px;border:none;border-radius:9px;font-size:11.5px;font-weight:600;cursor:pointer;color:var(--muted);background:none;transition:all .18s;}
+.ftab.on{background:var(--rose);color:#fff;box-shadow:0 2px 8px rgba(212,86,122,.3);}
+.count-pill{display:inline-flex;align-items:center;justify-content:center;min-width:17px;height:17px;border-radius:9px;background:rgba(255,255,255,.35);font-size:9px;font-weight:700;padding:0 4px;margin-left:3px;}
+.ftab.on .count-pill{background:rgba(255,255,255,.3);color:#fff;}
+
+/* ── review detail ── */
+.review-card{background:var(--rose-ll);border:1.5px solid var(--blush);border-radius:14px;padding:13px 14px;position:relative;flex-shrink:0;}
+.review-card::before{content:'\201C';position:absolute;top:-4px;left:8px;font-family:'Playfair Display',serif;font-size:52px;color:var(--blush);line-height:1;pointer-events:none;}
+.rev-reviewer{display:flex;align-items:center;gap:9px;margin-bottom:7px;}
+.rev-avatar-lg{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,var(--rose),var(--rose-d));display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;font-weight:700;flex-shrink:0;}
+.rev-name{font-size:13px;font-weight:700;color:var(--dark);}
+.rev-meta{font-size:10.5px;color:var(--muted);}
+.rev-body{font-size:13px;line-height:1.75;color:var(--dark);position:relative;z-index:1;}
+
+/* ── tone chips ── */
+.tone-row{display:flex;gap:5px;flex-wrap:wrap;flex-shrink:0;}
+.tone-chip{padding:5px 12px;border-radius:100px;border:1.5px solid var(--bdr);background:var(--card);font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;transition:all .15s;}
+.tone-chip.on{background:var(--dark);border-color:var(--dark);color:#fff;}
+
+/* ── reply box ── */
+.reply-wrap{flex:1;display:flex;flex-direction:column;gap:5px;min-height:130px;}
+.reply-textarea{flex:1;min-height:110px;width:100%;resize:none;border:2px solid var(--rose-l);border-radius:12px;background:#FFFCFA;padding:12px;font-size:13px;line-height:1.75;color:var(--dark);outline:none;transition:border-color .18s;}
+.reply-textarea:focus{border-color:var(--rose);}
+.reply-foot{display:flex;align-items:center;justify-content:space-between;flex-shrink:0;}
+.char-count{font-size:10px;color:var(--muted);}
+.char-count.warn{color:var(--gold);}
+.char-count.over{color:#e05;}
+
+/* ── seo badge ── */
+.seo-badge{flex-shrink:0;border-radius:10px;padding:7px 11px;font-size:10px;line-height:1.55;}
+.seo-badge.good{background:var(--green-l);border:1px solid var(--green-b);color:var(--green);}
+.seo-badge.tip{background:var(--gold-l);border:1px solid #EDD090;color:var(--muted);}
+
+/* ── posting state ── */
+.posting-overlay{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255,249,245,.96);display:none;flex-direction:column;align-items:center;justify-content:center;gap:10px;z-index:1000;}
+.posting-overlay.on{display:flex;}
+.post-spinner{width:40px;height:40px;border:3px solid var(--blush);border-top-color:var(--rose);border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.post-label{font-size:12px;font-weight:600;color:var(--dark);}
+
+/* ── ai thinking ── */
+.ai-wrap{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px 0;}
+.ai-orb{width:58px;height:58px;border-radius:50%;background:linear-gradient(135deg,var(--rose),var(--rose-d));display:flex;align-items:center;justify-content:center;font-size:26px;animation:pulse 1.5s ease-in-out infinite;}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(212,86,122,.4),0 0 0 0 rgba(212,86,122,.15)}55%{box-shadow:0 0 0 13px rgba(212,86,122,.08),0 0 0 26px rgba(212,86,122,.03)}}
+.ai-status{font-size:13px;font-weight:700;color:var(--dark);text-align:center;}
+.ai-sub{font-size:11px;color:var(--muted);text-align:center;}
+.dots span{animation:blink 1.3s infinite;display:inline-block;}
+.dots span:nth-child(2){animation-delay:.22s}.dots span:nth-child(3){animation-delay:.44s}
+@keyframes blink{0%,80%,100%{opacity:.15}40%{opacity:1}}
+
+/* ── tip box ── */
+.tip-box{background:var(--gold-l);border:1px solid #EDD090;border-radius:10px;padding:8px 12px;font-size:10.5px;color:var(--muted);line-height:1.6;flex-shrink:0;}
+.tip-box strong{color:var(--dark);}
+
+/* ── empty state ── */
+.empty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;flex:1;padding:30px 0;}
+.empty-icon{font-size:44px;opacity:.35;}
+.empty-txt{font-size:13px;color:var(--muted);text-align:center;line-height:1.6;}
+
+/* ── success ── */
+.success-icon{font-size:56px;text-align:center;animation:pop .4s cubic-bezier(.22,1.5,.36,1);}
+@keyframes pop{from{transform:scale(.4);opacity:0}to{transform:scale(1);opacity:1}}
+.success-title{font-family:'Playfair Display',serif;font-size:1.15rem;font-weight:700;text-align:center;}
+.success-sub{font-size:12px;color:var(--muted);text-align:center;line-height:1.6;}
+
+/* ── nav ── */
+.nav-bar{flex-shrink:0;display:flex;gap:8px;padding-top:8px;}
+
+/* ── stats bar ── */
+.stats-bar{display:flex;gap:7px;flex-shrink:0;}
+.stat-card{flex:1;background:var(--card);border:1.5px solid var(--bdr);border-radius:12px;padding:9px 8px;text-align:center;}
+.stat-num{font-family:'Playfair Display',serif;font-size:1.3rem;font-weight:700;color:var(--rose);}
+.stat-lbl{font-size:9.5px;color:var(--muted);margin-top:1px;}
+
+/* ── error banner ── */
+.err-banner{background:#fff0f3;border:1.5px solid #f8b4c4;border-radius:10px;padding:9px 12px;font-size:11.5px;color:#a00030;line-height:1.5;flex-shrink:0;}
+</style>
+</head>
+<body>
+<div id="app">
+<div class="bg-g"></div>
+<div class="bg-p" id="petals"></div>
+
+<div class="shell">
+
+<!-- HEADER -->
+<header class="hdr">
+  <div class="hdr-name">Wonder Streaks</div>
+  <div class="hdr-title">GMB Review <em>Manager</em></div>
+  <div class="hdr-sub">Auto-read · AI-reply · Post directly to Google</div>
+  <div class="hdr-user" id="hdrUser">
+    <span>✅</span>
+    <span class="hdr-user-name" id="hdrUserName"></span>
+    <button class="hdr-signout" onclick="signOut()">Sign out</button>
+  </div>
+</header>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: SETUP
+════════════════════════════════════════════ -->
+<div class="screen on" id="scSetup">
+  <div class="sa">
+
+    <div class="card">
+      <span class="badge">One-time setup · 5 minutes</span>
+      <div class="card-q">Connect your Google Business Profile</div>
+      <div class="card-hint" style="margin-bottom:12px">This tool reads your real reviews from Google and posts replies directly. You need a free Google Cloud OAuth key first — do this once.</div>
+
+      <div class="setup-step">
+        <div class="step-num">1</div>
+        <div class="step-body">
+          <div class="step-title">Create a Google Cloud project</div>
+          <div class="step-desc">Go to <a href="https://console.cloud.google.com" target="_blank">console.cloud.google.com</a> → click <strong>New Project</strong> → name it <em>WonderStreaks</em> → click Create.</div>
+        </div>
+      </div>
+
+      <div class="setup-step">
+        <div class="step-num">2</div>
+        <div class="step-body">
+          <div class="step-title">Enable Business Profile API</div>
+          <div class="step-desc">In your project → <strong>APIs &amp; Services → Library</strong> → search <code>Business Profile API</code> → click Enable. Also enable <code>My Business Account Management API</code>.</div>
+        </div>
+      </div>
+
+      <div class="setup-step">
+        <div class="step-num">3</div>
+        <div class="step-body">
+          <div class="step-title">Create OAuth credentials</div>
+          <div class="step-desc">Go to <strong>APIs &amp; Services → Credentials</strong> → <strong>Create Credentials → OAuth client ID</strong> → choose <em>Web application</em> → under "Authorised JavaScript origins" add the URL of this page → click Create → copy the <strong>Client ID</strong>.</div>
+        </div>
+      </div>
+
+      <div class="setup-step">
+        <div class="step-num">4</div>
+        <div class="step-body">
+          <div class="step-title">Paste your Client ID below</div>
+          <div class="step-desc">Your Client ID looks like: <code>123456789-abc...apps.googleusercontent.com</code></div>
+        </div>
+      </div>
+
+      <div style="margin-top:10px;display:flex;flex-direction:column;gap:8px;">
+        <label class="input-label">Google OAuth Client ID</label>
+        <input class="txt-input" id="clientIdInput" placeholder="Paste your Client ID here..." autocomplete="off" oninput="checkClientId()">
+        <div id="clientIdErr" style="font-size:10px;color:#c00;display:none;">Please enter a valid Client ID (ends with .apps.googleusercontent.com)</div>
+        <button class="btn-primary" id="btnSaveClientId" onclick="saveClientId()" disabled>Save &amp; Connect Google →</button>
+      </div>
+    </div>
+
+    <div class="tip-box">
+      🔒 <strong>Your data stays private.</strong> The Client ID only connects this page to your Google account. No data is sent to any third party — replies are posted directly from your browser to Google.
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: SIGN IN
+════════════════════════════════════════════ -->
+<div class="screen" id="scSignIn">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;padding:20px 0;">
+    <div style="font-size:48px">🌸</div>
+    <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;text-align:center;color:var(--dark)">Sign in to load your<br><em style="color:var(--rose)">Google reviews</em></div>
+    <div style="font-size:11.5px;color:var(--muted);text-align:center;max-width:300px;line-height:1.6">Sign in with the Google account that owns the Wonder Streaks business profile.</div>
+
+    <button class="g-signin-btn" id="btnGoogleSignIn" onclick="doGoogleSignIn()">
+      <svg width="20" height="20" viewBox="0 0 48 48"><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.16C6.51 42.62 14.62 48 24 48z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.16C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.75l7.97-6.16z"/><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.16C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="none" d="M0 0h48v48H0z"/></svg>
+      Continue with Google
+    </button>
+
+    <button class="btn-ghost" onclick="showScreen('scSetup')">← Change OAuth settings</button>
+
+    <div id="signinErr" class="err-banner" style="display:none;width:100%;"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: LOADING REVIEWS
+════════════════════════════════════════════ -->
+<div class="screen" id="scLoading">
+  <div class="ai-wrap">
+    <div class="ai-orb">📋</div>
+    <div class="ai-status" id="loadStatus">Connecting to Google<span class="dots"><span>.</span><span>.</span><span>.</span></span></div>
+    <div class="ai-sub" id="loadSub">Reading your Business Profile</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: REVIEW LIST (DASHBOARD)
+════════════════════════════════════════════ -->
+<div class="screen" id="scList">
+  <!-- stats -->
+  <div class="stats-bar" id="statsBar" style="margin-bottom:8px">
+    <div class="stat-card"><div class="stat-num" id="statTotal">0</div><div class="stat-lbl">Total</div></div>
+    <div class="stat-card"><div class="stat-num" id="statNew" style="color:var(--rose-d)">0</div><div class="stat-lbl">Needs Reply</div></div>
+    <div class="stat-card"><div class="stat-num" id="statDone" style="color:var(--green)">0</div><div class="stat-lbl">Replied</div></div>
+    <div class="stat-card"><div class="stat-num" id="statAvg">⭐</div><div class="stat-lbl">Avg Rating</div></div>
+  </div>
+
+  <!-- filter -->
+  <div class="filter-tabs" style="margin-bottom:8px">
+    <button class="ftab on" id="ftAll" onclick="setFilter('all')">All <span class="count-pill" id="fcAll">0</span></button>
+    <button class="ftab" id="ftNew" onclick="setFilter('new')">🔴 New <span class="count-pill" id="fcNew">0</span></button>
+    <button class="ftab" id="ftReplied" onclick="setFilter('replied')">✅ Done <span class="count-pill" id="fcReplied">0</span></button>
+  </div>
+
+  <div id="errBanner" class="err-banner" style="display:none;margin-bottom:6px;"></div>
+
+  <div class="sa" id="reviewList">
+    <!-- populated by JS -->
+  </div>
+
+  <div class="nav-bar" style="padding-bottom:4px">
+    <button class="btn-secondary" onclick="refreshReviews()" id="btnRefresh">🔄 Refresh Reviews</button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: AI GENERATING
+════════════════════════════════════════════ -->
+<div class="screen" id="scGenerating">
+  <div class="ai-wrap">
+    <div class="ai-orb">✨</div>
+    <div class="ai-status" id="genStatus">Reading the review<span class="dots"><span>.</span><span>.</span><span>.</span></span></div>
+    <div class="ai-sub" id="genSub">Crafting a friendly, SEO-optimised reply</div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: REPLY EDITOR
+════════════════════════════════════════════ -->
+<div class="screen" id="scReply">
+  <div class="sa" id="replyScrollArea">
+
+    <!-- Review display -->
+    <div class="review-card" id="revCard">
+      <div class="rev-reviewer">
+        <div class="rev-avatar-lg" id="revAvatar">?</div>
+        <div>
+          <div class="rev-name" id="revName">Reviewer</div>
+          <div class="rev-meta" id="revMeta"></div>
+        </div>
+      </div>
+      <div class="rev-body" id="revBody"></div>
+    </div>
+
+    <!-- Tone selector -->
+    <div style="flex-shrink:0">
+      <div style="font-size:10.5px;font-weight:600;color:var(--muted);margin-bottom:5px;">Reply tone:</div>
+      <div class="tone-row">
+        <button class="tone-chip on" data-tone="warm" onclick="setTone(this)">🤗 Warm</button>
+        <button class="tone-chip" data-tone="professional" onclick="setTone(this)">💼 Professional</button>
+        <button class="tone-chip" data-tone="friendly" onclick="setTone(this)">😊 Friendly</button>
+        <button class="tone-chip" data-tone="grateful" onclick="setTone(this)">🙏 Grateful</button>
+      </div>
+    </div>
+
+    <!-- Reply editor -->
+    <div style="flex-shrink:0">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
+        <div style="font-size:10.5px;font-weight:600;color:var(--muted);">Your reply — edit freely:</div>
+        <button class="btn-regen" id="regenBtn" onclick="regenReply()">🔀 Try another</button>
+      </div>
+    </div>
+
+    <div class="reply-wrap">
+      <textarea class="reply-textarea" id="replyText" oninput="onReplyInput()" placeholder="Reply will appear here..."></textarea>
+      <div class="reply-foot">
+        <div class="char-count" id="charCount">0 / 4096</div>
+        <div style="font-size:10px;color:var(--muted)">Edit as you like before posting</div>
+      </div>
+    </div>
+
+    <!-- SEO badge -->
+    <div class="seo-badge tip" id="seoBadge">🔍 <strong>SEO tip:</strong> A good reply mentions the service and "Marathahalli" naturally — Google uses it for local ranking.</div>
+
+  </div>
+
+  <div id="postingOverlay" class="posting-overlay">
+    <div class="post-spinner"></div>
+    <div class="post-label" id="postLabel">Posting reply to Google...</div>
+  </div>
+
+  <div id="replyErrBanner" class="err-banner" style="display:none;margin-top:6px;"></div>
+
+  <div class="nav-bar" style="padding-bottom:4px">
+    <button class="btn-back" onclick="showScreen('scList')">← Back</button>
+    <button class="btn-primary" style="flex:1" onclick="postReply()" id="btnPost">
+      <span>📤 Post Reply to Google</span>
+    </button>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════
+     SCREEN: SUCCESS
+════════════════════════════════════════════ -->
+<div class="screen" id="scSuccess">
+  <div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px 10px;">
+    <div class="success-icon">🌸</div>
+    <div class="success-title">Reply posted!</div>
+    <div class="success-sub" id="successSub">Your reply is now live on Google.<br>This helps your ranking in local search.</div>
+    <div class="tip-box" style="max-width:360px;text-align:center;margin-top:4px">
+      🌟 <strong>Google tip:</strong> Replying within 24 hrs signals an active, responsive business — directly improves local search ranking.
+    </div>
+    <button class="btn-primary" style="max-width:280px;margin-top:8px" onclick="afterSuccess()">← Reply to Another Review</button>
+  </div>
+</div>
+
+</div><!-- .shell -->
+</div><!-- #app -->
+
+<script>
+// ════════════════════════════════════════════════════════
+// CONFIG & STATE
+// FIX BUG-01/02/08/09/12: GIS loaded via onload callback, gisReady flag,
+//   tokenClient init in callback, error handling inside callback
+// FIX BUG-06/11: All GBP calls use mybusiness.googleapis.com/v4 for
+//   both accounts/locations/reviews
+// ════════════════════════════════════════════════════════
+const SCOPE       = 'https://www.googleapis.com/auth/business.manage';
+const GBP_BASE    = 'https://mybusiness.googleapis.com/v4';
+const ACCT_BASE   = 'https://mybusinessaccountmanagement.googleapis.com/v1';
+
+let gisReady      = false;   // FIX BUG-12: set true only after GIS script loads
+let _tokenClient  = null;
+let _firstSignIn  = true;    // FIX BUG-09: only show consent on first use
+
+let STATE = {
+  clientId:    localStorage.getItem('ws_gmb_clientId') || '',
+  accessToken: '',
+  accountName: '',   // e.g. accounts/123456789
+  locationName:'',   // e.g. accounts/123/locations/456  (full resource name)
+  reviews:     [],
+  activeReview: null,
+  activeTone:  'warm',
+  filter:      'all',
+  userEmail:   '',
+};
+
+// ════════════════════════════════════════════════════════
+// INIT
+// ════════════════════════════════════════════════════════
+// FIX BUG-01/02/12: GIS onload callback — initialises tokenClient safely
+function onGisLoad(){
+  gisReady = true;
+  // Enable sign-in button now that GIS is ready
+  const btn = document.getElementById('btnGoogleSignIn');
+  if(btn) btn.disabled = false;
+  // Pre-init tokenClient if clientId already saved
+  if(STATE.clientId) initTokenClient();
+}
+
+function initTokenClient(){
+  if(!gisReady || !STATE.clientId) return;
+  // FIX BUG-08: no error_callback — errors come through callback with resp.error
+  _tokenClient = google.accounts.oauth2.initTokenClient({
+    client_id: STATE.clientId,
+    scope: SCOPE,
+    callback: onTokenResponse,
+    // FIX BUG-09: prompt only on first sign-in
+    prompt: _firstSignIn ? 'select_account' : '',
+  });
+}
+
+(function init(){
+  // Petals
+  const w=document.getElementById('petals');
+  ['🌸','🌺','✨','💕','🌷'].forEach((em,i)=>{
+    const el=document.createElement('div');el.className='fp';
+    el.textContent=em;
+    el.style.cssText=`left:${Math.random()*100}%;font-size:${12+Math.random()*11}px;animation-duration:${10+Math.random()*14}s;animation-delay:${Math.random()*14}s;`;
+    w.appendChild(el);
+  });
+  // Viewport height
+  const setVh=()=>document.documentElement.style.setProperty('--vh',(window.innerHeight*.01)+'px');
+  setVh(); window.addEventListener('resize',setVh);
+  window.addEventListener('orientationchange',()=>setTimeout(setVh,200));
+  // FIX BUG-12: Disable sign-in button until GIS ready
+  const btn = document.getElementById('btnGoogleSignIn');
+  if(btn) btn.disabled = true;
+  // Pre-fill saved client ID
+  if(STATE.clientId){
+    document.getElementById('clientIdInput').value = STATE.clientId;
+    checkClientId();
+    showScreen('scSignIn');
+  }
+})();
+
+// ════════════════════════════════════════════════════════
+// SCREEN NAVIGATION
+// ════════════════════════════════════════════════════════
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>{
+    s.classList.remove('on');
+    s.style.animation='none';
+  });
+  const el=document.getElementById(id);
+  void el.offsetHeight;
+  el.style.animation='';
+  el.classList.add('on');
+}
+
+// ════════════════════════════════════════════════════════
+// SETUP — CLIENT ID
+// ════════════════════════════════════════════════════════
+function checkClientId(){
+  const val = document.getElementById('clientIdInput').value.trim();
+  const valid = val.length > 20 && val.includes('.apps.googleusercontent.com');
+  document.getElementById('btnSaveClientId').disabled = !valid;
+  document.getElementById('clientIdErr').style.display = val.length > 10 && !valid ? 'block' : 'none';
+}
+
+function saveClientId(){
+  const val = document.getElementById('clientIdInput').value.trim();
+  if(!val.includes('.apps.googleusercontent.com')) return;
+  STATE.clientId = val;
+  localStorage.setItem('ws_gmb_clientId', val);
+  // Reinit tokenClient with new clientId (FIX BUG-02)
+  _tokenClient = null;
+  if(gisReady) initTokenClient();
+  showScreen('scSignIn');
+}
+
+// ════════════════════════════════════════════════════════
+// GOOGLE SIGN-IN (GIS Token Model)
+// FIX BUG-01/02/08/09/12/13: tokenClient init in onGisLoad, guard gisReady,
+//   no error_callback, errors handled in callback, prompt only on first login
+// ════════════════════════════════════════════════════════
+function doGoogleSignIn(){
+  if(!STATE.clientId){ showScreen('scSetup'); return; }
+  hideErr('signinErr');
+
+  // FIX BUG-12: Guard — GIS not yet loaded
+  if(!gisReady){
+    showErr('signinErr','Google Sign-In is still loading. Please wait a moment and try again.');
+    return;
+  }
+
+  // FIX BUG-01/02: tokenClient already inited in onGisLoad. Re-init if clientId changed.
+  if(!_tokenClient) initTokenClient();
+
+  if(!_tokenClient){
+    showErr('signinErr','Sign-In could not be initialised. Please check your Client ID is correct and this page origin is in your OAuth Authorised JavaScript Origins.');
+    return;
+  }
+
+  _tokenClient.requestAccessToken();
+}
+
+// FIX BUG-08: onTokenResponse handles both success and error (no separate error_callback)
+function onTokenResponse(resp){
+  if(resp && resp.error){
+    let msg = resp.error;
+    if(resp.error === 'popup_closed_by_user') msg = 'Sign-in was cancelled. Please try again.';
+    else if(resp.error === 'access_denied') msg = 'Access was denied. Please grant the required permissions.';
+    else if(resp.error === 'invalid_client') msg = 'Invalid Client ID. Please check your OAuth Client ID in setup.';
+    else msg = 'Sign-in failed: '+resp.error+(resp.error_description?' — '+resp.error_description:'');
+    showErr('signinErr', msg);
+    return;
+  }
+  if(!resp || !resp.access_token){
+    showErr('signinErr','No access token received. Please try again.');
+    return;
+  }
+  _firstSignIn = false;  // FIX BUG-09: subsequent sign-ins skip consent screen
+  STATE.accessToken = resp.access_token;
+  loadUserAndReviews();
+}
+
+function signOut(){
+  if(STATE.accessToken && gisReady){
+    try{ google.accounts.oauth2.revoke(STATE.accessToken, ()=>{}); }catch(_){}
+  }
+  STATE.accessToken=''; STATE.accountName=''; STATE.locationName=''; STATE.reviews=[];
+  _firstSignIn = true;
+  _tokenClient = null;
+  document.getElementById('hdrUser').classList.remove('on');
+  showScreen('scSignIn');
+}
+
+// ════════════════════════════════════════════════════════
+// LOAD ACCOUNT → LOCATION → REVIEWS
+// ════════════════════════════════════════════════════════
+async function loadUserAndReviews(){
+  showScreen('scLoading');
+  setLoadStatus('Connecting to Google','Reading your Business Profile...');
+
+  try{
+    // 1. Get user info
+    const me = await gFetch('https://www.googleapis.com/oauth2/v2/userinfo');
+    STATE.userEmail = me.email || '';
+    document.getElementById('hdrUserName').textContent = me.email || 'Connected';
+    document.getElementById('hdrUser').classList.add('on');
+
+    // 2. FIX BUG-11: Get accounts via Account Management API
+    setLoadStatus('Loading your business accounts','Looking for Wonder Streaks...');
+    const accounts = await gFetch(`${ACCT_BASE}/accounts`);
+    if(!accounts.accounts || accounts.accounts.length===0)
+      throw new Error('No Business Profile accounts found. Make sure you are signed in with the Google account that manages Wonder Streaks.');
+
+    // Prefer a LOCATION_GROUP/ORGANIZATION account over personal
+    const acct = accounts.accounts.find(a=>a.type==='LOCATION_GROUP'||a.type==='ORGANIZATION')
+               || accounts.accounts[0];
+    STATE.accountName = acct.name; // e.g. "accounts/123456789"
+
+    // 3. FIX BUG-06: List locations via GBP v4 (NOT mybusinessinformation)
+    setLoadStatus('Finding Wonder Streaks location','Almost there...');
+    const locs = await gFetch(`${GBP_BASE}/${STATE.accountName}/locations?pageSize=10`);
+    if(!locs.locations || locs.locations.length===0)
+      throw new Error('No locations found. Make sure your Business Profile is verified and linked to this Google account.');
+
+    // Find Wonder Streaks or use first location
+    const loc = locs.locations.find(l=>
+        (l.locationName||l.name||l.title||'').toLowerCase().includes('wonder')
+      ) || locs.locations[0];
+    STATE.locationName = loc.name; // full path: "accounts/123/locations/456"
+
+    // 4. Fetch reviews
+    await fetchReviews();
+
+  } catch(e){
+    showErr('signinErr', e.message || String(e));
+    showScreen('scSignIn');
+  }
+}
+
+async function fetchReviews(){
+  setLoadStatus('Loading reviews','Checking for unreplied reviews...');
+  try{
+    // FIX BUG-03: STATE.locationName is already the full parent path "accounts/X/locations/Y"
+    // FIX BUG-04: removed the no-op replace()
+    // FIX BUG-10: orderBy space must be URL-encoded
+    const url = `${GBP_BASE}/${STATE.locationName}/reviews?pageSize=50&orderBy=updateTime%20desc`;
+    const data = await gFetch(url);
+    STATE.reviews = (data.reviews || []).map(r=>({
+      reviewId:   r.reviewId,
+      name:       r.name,  // full resource: "accounts/X/locations/Y/reviews/Z"
+      reviewer:   r.reviewer?.displayName || 'Anonymous',
+      photoUrl:   r.reviewer?.profilePhotoUrl || '',
+      rating:     ratingToNum(r.starRating),
+      comment:    r.comment || '',
+      createTime: r.createTime,
+      updateTime: r.updateTime,
+      replied:    !!r.reviewReply,
+      replyText:  r.reviewReply?.comment || '',
+    }));
+    renderDashboard();
+    showScreen('scList');
+  } catch(e){
+    showErr('errBanner', 'Could not load reviews: '+e.message);
+    showScreen('scList');
+  }
+}
+
+async function refreshReviews(){
+  const btn = document.getElementById('btnRefresh');
+  btn.disabled=true; btn.textContent='Loading...';
+  showScreen('scLoading');
+  setLoadStatus('Refreshing reviews','Checking for new reviews...');
+  // FIX BUG-14: use finally so button always resets even on error
+  try{ await fetchReviews(); }
+  catch(e){ showErr('errBanner','Refresh failed: '+e.message); showScreen('scList'); }
+  finally{ btn.disabled=false; btn.textContent='🔄 Refresh Reviews'; }
+}
+
+// ════════════════════════════════════════════════════════
+// DASHBOARD
+// ════════════════════════════════════════════════════════
+function renderDashboard(){
+  const total   = STATE.reviews.length;
+  const needsReply = STATE.reviews.filter(r=>!r.replied).length;
+  const replied = total - needsReply;
+  const avgRating = total ? (STATE.reviews.reduce((s,r)=>s+r.rating,0)/total).toFixed(1) : '—';
+
+  document.getElementById('statTotal').textContent  = total;
+  document.getElementById('statNew').textContent    = needsReply;
+  document.getElementById('statDone').textContent   = replied;
+  document.getElementById('statAvg').textContent    = avgRating;
+
+  document.getElementById('fcAll').textContent     = total;
+  document.getElementById('fcNew').textContent     = needsReply;
+  document.getElementById('fcReplied').textContent = replied;
+
+  renderReviewList();
+}
+
+function setFilter(f){
+  STATE.filter = f;
+  ['all','new','replied'].forEach(x=>{
+    document.getElementById('ft'+cap(x)).classList.toggle('on',x===f);
+  });
+  renderReviewList();
+}
+
+function renderReviewList(){
+  const list = document.getElementById('reviewList');
+  list.innerHTML='';
+  let shown = STATE.reviews;
+  if(STATE.filter==='new')     shown = shown.filter(r=>!r.replied);
+  if(STATE.filter==='replied') shown = shown.filter(r=>r.replied);
+
+  if(shown.length===0){
+    list.innerHTML=`<div class="empty"><div class="empty-icon">${STATE.filter==='new'?'🎉':'📋'}</div><div class="empty-txt">${STATE.filter==='new'?'All reviews have been replied to!<br>Great work 🌸':'No reviews yet.<br>Refresh after customers leave reviews.'}</div></div>`;
+    return;
+  }
+
+  shown.forEach(r=>{
+    const div=document.createElement('div');
+    div.className='review-item'+(r.replied?' replied':'');
+    div.innerHTML=`
+      <div class="ri-top">
+        <div class="ri-avatar">${(r.reviewer||'?')[0].toUpperCase()}</div>
+        <div style="flex:1">
+          <div class="ri-name">${esc(r.reviewer)}</div>
+          <div class="ri-date">${fmtDate(r.updateTime)}</div>
+        </div>
+        <div>${stars(r.rating)}</div>
+        ${r.replied ? '<div class="replied-badge">✓ Replied</div>' : '<div class="new-badge">🔴 New</div>'}
+      </div>
+      <div class="ri-text">${esc(r.comment||'(Rating only — no text)')}</div>
+      ${!r.replied ? '<div class="ri-arrow">›</div>' : ''}
+    `;
+    if(!r.replied) div.onclick = ()=>openReview(r);
+    list.appendChild(div);
+  });
+}
+
+// ════════════════════════════════════════════════════════
+// OPEN REVIEW → GENERATE REPLY
+// ════════════════════════════════════════════════════════
+async function openReview(review){
+  STATE.activeReview = review;
+  STATE.activeTone   = 'warm';
+
+  // Reset tone chips
+  document.querySelectorAll('.tone-chip').forEach(c=>c.classList.toggle('on', c.dataset.tone==='warm'));
+
+  showScreen('scGenerating');
+  animateGen();
+
+  try{
+    const reply = await generateReply(review.comment, review.rating, 'warm', review.reviewer);
+    showReplyEditor(review, reply);
+  } catch(e){
+    // Fallback
+    showReplyEditor(review, buildFallback(review.reviewer, review.rating, review.comment, 'warm'));
+  }
+}
+
+function showReplyEditor(review, replyText){
+  stopGenAnim();
+
+  // Populate review card
+  document.getElementById('revAvatar').textContent = (review.reviewer||'?')[0].toUpperCase();
+  document.getElementById('revName').textContent   = review.reviewer;
+  document.getElementById('revMeta').textContent   = stars(review.rating)+' · '+fmtDate(review.updateTime);
+  document.getElementById('revBody').textContent   = review.comment || '(Rating only — no text left)';
+
+  // Populate reply
+  document.getElementById('replyText').value = replyText;
+  document.getElementById('replyErrBanner').style.display='none';
+  onReplyInput();
+
+  showScreen('scReply');
+  // Scroll reply area to top
+  setTimeout(()=>{ const sa=document.getElementById('replyScrollArea'); if(sa) sa.scrollTop=0; },50);
+}
+
+// ════════════════════════════════════════════════════════
+// GENERATE REPLY (Claude API)
+// ════════════════════════════════════════════════════════
+async function generateReply(reviewText, stars, tone, reviewerName){
+  const toneGuides={
+    warm:        'warm, personal and caring — like a friend who owns the salon',
+    professional:'professional and polished but still approachable and friendly',
+    friendly:    'light, friendly and upbeat — conversational everyday Indian English',
+    grateful:    'genuinely grateful and heartfelt — the owner really appreciates this customer',
+  };
+  const ctx = stars<=2
+    ? 'This is a negative or low-rating review. Acknowledge the concern with empathy, apologise briefly and genuinely, do NOT be defensive, and invite them back to make it right.'
+    : stars===3
+    ? 'This is a neutral 3-star review. Thank them, acknowledge both positives and any concern mentioned, and invite them back.'
+    : 'This is a positive 4 or 5-star review. Celebrate it warmly!';
+
+  const prompt=`You are writing a Google Business Profile reply on behalf of Wonder Streaks Women's Beauty Salon in Marathahalli, Bangalore. The owner's name is not mentioned — reply as "the team" or "we".
+
+REVIEWER: ${reviewerName}
+REVIEW (${stars} stars): "${reviewText||'No text — rating only'}"
+
+RULES:
+- Tone: ${toneGuides[tone]||toneGuides.warm}
+- ${ctx}
+- Length: 55–120 words. Short, natural and human — not corporate.
+- Use the reviewer's first name once, naturally. Do NOT start with "Dear" or "Hello [Name],".
+- Mention "Wonder Streaks" or "our salon in Marathahalli" once — important for Google local SEO.
+- If the review mentions a specific service (haircut, facial, waxing, colour, bridal, etc.) naturally mention it once — this helps Google match the reply to local service searches.
+- End with a warm invitation to visit again.
+- NO hashtags. NO bullet points. Flowing natural text only.
+- Use simple, warm Indian English. Write like a real person, not a PR team.
+- Output ONLY the reply text. No labels, no quotes, nothing else.`;
+
+  const resp = await fetch('https://api.anthropic.com/v1/messages',{
+    method:'POST',
+    headers:{'Content-Type':'application/json'},
+    body:JSON.stringify({
+      model:'claude-sonnet-4-20250514',
+      max_tokens:300,
+      messages:[{role:'user',content:prompt}]
+    })
+  });
+  if(!resp.ok) throw new Error('Claude API '+resp.status);
+  const data = await resp.json();
+  return data.content?.find(b=>b.type==='text')?.text?.trim()||'';
+}
+
+// ════════════════════════════════════════════════════════
+// FALLBACK (offline / API error)
+// ════════════════════════════════════════════════════════
+function buildFallback(name, rating, text, tone){
+  const first = (name||'').split(' ')[0]||'there';
+  if(rating>=4) return `Thank you so much for this lovely review, ${first}! We're so glad you had a great experience at Wonder Streaks, Marathahalli. Your kind words mean a lot to our whole team. We'd love to see you again soon! 🌸`;
+  if(rating===3) return `Thank you for visiting us, ${first}, and for taking the time to share your feedback. We're glad parts of your experience were positive and we always want to do better. Do visit Wonder Streaks, Marathahalli again — we'd love to make it a 5-star experience for you!`;
+  return `Thank you for your feedback, ${first}. We're sorry to hear your experience at Wonder Streaks, Marathahalli didn't meet your expectations. We genuinely care about every customer and would love the chance to make this right. Please visit us again and ask for the manager — we'll take personal care of you.`;
+}
+
+// ════════════════════════════════════════════════════════
+// TONE CHANGE + REGEN
+// ════════════════════════════════════════════════════════
+function setTone(el){
+  document.querySelectorAll('.tone-chip').forEach(c=>c.classList.remove('on'));
+  el.classList.add('on');
+  STATE.activeTone = el.dataset.tone;
+}
+
+async function regenReply(){
+  const btn=document.getElementById('regenBtn');
+  const ta=document.getElementById('replyText');
+  btn.style.opacity='.4'; btn.style.pointerEvents='none';
+  ta.style.opacity='.4';
+  try{
+    const reply = await generateReply(STATE.activeReview.comment, STATE.activeReview.rating, STATE.activeTone, STATE.activeReview.reviewer);
+    ta.value = reply;
+    onReplyInput();
+  } catch(e){
+    ta.value = buildFallback(STATE.activeReview.reviewer, STATE.activeReview.rating, STATE.activeReview.comment, STATE.activeTone);
+    onReplyInput();
+  }
+  ta.style.opacity=''; btn.style.opacity=''; btn.style.pointerEvents='';
+}
+
+// ════════════════════════════════════════════════════════
+// REPLY INPUT HANDLERS
+// ════════════════════════════════════════════════════════
+function onReplyInput(){
+  const val = document.getElementById('replyText').value;
+  const len = val.length;
+  const el  = document.getElementById('charCount');
+  el.textContent=`${len} / 4096`;
+  el.className='char-count'+(len>4000?' over':len>3500?' warn':'');
+
+  // Live SEO badge
+  const low = val.toLowerCase();
+  const hasMara  = low.includes('marathahalli');
+  const hasWS    = low.includes('wonder streaks');
+  const hasSvc   = /hair|skin|facial|wax|thread|colour|color|pedicure|manicure|makeup|mehendi|bridal|smoothen|spa|nail/.test(low);
+  const count    = [hasMara,hasWS,hasSvc].filter(Boolean).length;
+  const badge    = document.getElementById('seoBadge');
+  if(count>=2){
+    badge.className='seo-badge good';
+    const found=[hasMara&&'Marathahalli',hasWS&&'Wonder Streaks',hasSvc&&'service name'].filter(Boolean);
+    badge.innerHTML=`✅ <strong>SEO looks great!</strong> Reply mentions ${found.join(', ')} — Google will use this for local ranking.`;
+  } else {
+    badge.className='seo-badge tip';
+    badge.innerHTML=`🔍 <strong>SEO tip:</strong> Try to naturally include "Wonder Streaks", "Marathahalli" and the service name — helps Google rank you higher in local search.`;
+  }
+}
+
+// ════════════════════════════════════════════════════════
+// POST REPLY TO GOOGLE
+// ════════════════════════════════════════════════════════
+async function postReply(){
+  const replyTxt = document.getElementById('replyText').value.trim();
+  if(!replyTxt || replyTxt.length < 10){
+    showErr('replyErrBanner','Please write a reply before posting.');
+    return;
+  }
+  hideErr('replyErrBanner');
+
+  // Show overlay
+  document.getElementById('postingOverlay').classList.add('on');
+  document.getElementById('postLabel').textContent='Posting your reply to Google...';
+  document.getElementById('btnPost').disabled=true;
+
+  try{
+    // FIX BUG-05: reviewName from API is full resource path "accounts/X/locations/Y/reviews/Z"
+    // GBP_BASE = "https://mybusiness.googleapis.com/v4"
+    // Correct URL: mybusiness.googleapis.com/v4/accounts/X/locations/Y/reviews/Z/reply
+    const reviewName = STATE.activeReview.name; // already full path, no base URL
+    const replyUrl = `${GBP_BASE}/${reviewName}/reply`;
+
+    const result = await gFetch(replyUrl, 'PUT', { comment: replyTxt });
+
+    // Mark as replied in local state
+    const idx = STATE.reviews.findIndex(r=>r.reviewId===STATE.activeReview.reviewId);
+    if(idx>=0){ STATE.reviews[idx].replied=true; STATE.reviews[idx].replyText=replyTxt; }
+
+    document.getElementById('postingOverlay').classList.remove('on');
+    document.getElementById('btnPost').disabled=false;
+
+    // FIX BUG-15: use innerHTML with <br> — textContent ignores \n
+    document.getElementById('successSub').innerHTML=
+      `Your reply to <strong>${esc(STATE.activeReview.reviewer)}</strong> is now live on Google.<br>This helps your ranking in local search. 🌸`;
+    showScreen('scSuccess');
+
+  } catch(e){
+    document.getElementById('postingOverlay').classList.remove('on');
+    document.getElementById('btnPost').disabled=false;
+    showErr('replyErrBanner','Failed to post reply: '+e.message+'. Check your internet connection and try again.');
+  }
+}
+
+function afterSuccess(){
+  renderDashboard();
+  showScreen('scList');
+}
+
+// ════════════════════════════════════════════════════════
+// GOOGLE API FETCH HELPER
+// ════════════════════════════════════════════════════════
+async function gFetch(url, method='GET', body=null){
+  if(!STATE.accessToken) throw new Error('Not authenticated — please sign in again.');
+  const opts = {
+    method,
+    headers:{
+      'Authorization':'Bearer '+STATE.accessToken,
+      'Content-Type':'application/json',
+    }
+  };
+  if(body) opts.body = JSON.stringify(body);
+  const resp = await fetch(url, opts);
+  const text = await resp.text();
+  if(!resp.ok){
+    let msg = resp.status+' '+resp.statusText;
+    try{ const j=JSON.parse(text); msg=(j.error?.message||j.error||msg); }catch(_){}
+    // FIX BUG-13: On 401, attempt silent re-auth via existing tokenClient
+    if(resp.status===401){
+      STATE.accessToken='';
+      document.getElementById('hdrUser').classList.remove('on');
+      if(_tokenClient){
+        // Try silent re-auth — will trigger popup if needed
+        _tokenClient.requestAccessToken();
+        throw new Error('Session expired — re-authenticating. Please try again in a moment.');
+      }
+      showScreen('scSignIn');
+      throw new Error('Session expired. Please sign in again.');
+    }
+    throw new Error(msg);
+  }
+  if(!text) return {};
+  return JSON.parse(text);
+}
+
+// ════════════════════════════════════════════════════════
+// GENERATING ANIMATION
+// ════════════════════════════════════════════════════════
+let _genTimer=null;
+function animateGen(){
+  const steps=[
+    ['Reading the review','Understanding what the customer experienced...'],
+    ['Identifying key points','Picking up on what they mentioned...'],
+    ['Crafting your reply','Making it warm, natural and SEO-optimised...'],
+    ['Adding Google keywords','Helping Wonder Streaks rank higher locally...'],
+    ['Polishing the tone','Almost ready — just a moment!'],
+  ];
+  let i=0;
+  _genTimer=setInterval(()=>{
+    if(i>=steps.length){clearInterval(_genTimer);return;}
+    document.getElementById('genStatus').innerHTML=steps[i][0]+'<span class="dots"><span>.</span><span>.</span><span>.</span></span>';
+    document.getElementById('genSub').textContent=steps[i][1];
+    i++;
+  },700);
+}
+function stopGenAnim(){ clearInterval(_genTimer); }
+
+function setLoadStatus(s,sub){
+  document.getElementById('loadStatus').innerHTML=s+'<span class="dots"><span>.</span><span>.</span><span>.</span></span>';
+  document.getElementById('loadSub').textContent=sub;
+}
+
+// ════════════════════════════════════════════════════════
+// HELPERS
+// ════════════════════════════════════════════════════════
+function ratingToNum(s){
+  return {ONE:1,TWO:2,THREE:3,FOUR:4,FIVE:5}[s]||0;
+}
+function stars(n){ return '⭐'.repeat(Math.min(5,Math.max(0,n))); }
+function fmtDate(iso){
+  if(!iso) return '';
+  try{ return new Date(iso).toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}); }
+  catch(_){ return iso.slice(0,10); }
+}
+function esc(s){ return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function cap(s){ return s.charAt(0).toUpperCase()+s.slice(1); }
+
+function showErr(id, msg){ const el=document.getElementById(id); if(el){el.textContent=msg;el.style.display='block';} }
+function hideErr(id){ const el=document.getElementById(id); if(el) el.style.display='none'; }
+</script>
+</body>
+</html>

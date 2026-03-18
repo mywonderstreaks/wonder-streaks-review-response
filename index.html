@@ -446,6 +446,8 @@ let _tokenClient = null;
 let _firstSignIn = true;
 let _pendingRequests = []; // Queue for requests waiting for token refresh
 let _isRefreshing = false; // Flag to prevent multiple refresh attempts
+let _isSigningIn = false; // Flag to prevent multiple simultaneous sign-in attempts
+let _signInAttempts = 0; // Track sign-in attempts to prevent infinite loops
 
 let STATE = {
   clientId: localStorage.getItem('ws_gmb_clientId') || '',
@@ -464,22 +466,53 @@ let STATE = {
 // INIT
 // ════════════════════════════════════════════════════════
 function onGisLoad(){
+  console.log('Google Identity Services loaded');
   gisReady = true;
   const btn = document.getElementById('btnGoogleSignIn');
-  if(btn){ btn.disabled = false; btn.style.opacity = '1'; }
+  if(btn){ 
+    btn.disabled = false; 
+    btn.style.opacity = '1'; 
+  }
   const lbl = document.getElementById('signinBtnLabel');
   if(lbl) lbl.textContent = 'Continue with Google';
-  if(STATE.clientId) initTokenClient();
+  
+  // Only initialize if we have a client ID and we're not already signed in
+  if(STATE.clientId && !STATE.accessToken) {
+    console.log('Initializing token client on GIS load');
+    initTokenClient();
+  } else if(STATE.accessToken) {
+    console.log('Already signed in, skipping token client init');
+  } else {
+    console.log('No client ID yet, waiting for setup');
+  }
 }
 
 function initTokenClient(){
-  if(!gisReady || !STATE.clientId) return;
-  _tokenClient = google.accounts.oauth2.initTokenClient({
-    client_id: STATE.clientId,
-    scope: SCOPE,
-    callback: onTokenResponse,
-    prompt: _firstSignIn ? 'consent' : '',
-  });
+  if(!gisReady || !STATE.clientId) {
+    console.warn('Cannot init token client: gisReady=', gisReady, 'clientId=', !!STATE.clientId);
+    return;
+  }
+  
+  // Prevent multiple initializations
+  if(_tokenClient) {
+    console.log('Token client already initialized');
+    return;
+  }
+  
+  try {
+    _tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: STATE.clientId,
+      scope: SCOPE,
+      callback: onTokenResponse,
+      // FIX: Use 'select_account consent' for first sign-in to ensure proper flow
+      // For subsequent sign-ins, use empty string for silent refresh
+      prompt: _firstSignIn ? 'select_account consent' : '',
+    });
+    console.log('Token client initialized successfully');
+  } catch(e) {
+    console.error('Failed to initialize token client:', e);
+    showErr('signinErr', 'Failed to initialize Google Sign-In: ' + e.message);
+  }
 }
 
 (function init(){
@@ -580,7 +613,23 @@ function saveClientId(){
 // GOOGLE SIGN-IN
 // ════════════════════════════════════════════════════════
 function doGoogleSignIn(){
-  if(!STATE.clientId){ showScreen('scSetup'); return; }
+  // Prevent multiple simultaneous sign-in attempts
+  if(_isSigningIn){
+    console.log('Sign-in already in progress, ignoring duplicate request');
+    return;
+  }
+  
+  // Prevent infinite loops - max 3 attempts
+  if(_signInAttempts >= 3){
+    showErr('signinErr', 'Too many sign-in attempts. Please refresh the page and try again, or check your OAuth configuration in Google Cloud Console.');
+    return;
+  }
+  
+  if(!STATE.clientId){ 
+    showScreen('scSetup'); 
+    return; 
+  }
+  
   hideErr('signinErr');
 
   if(!gisReady){
@@ -588,36 +637,85 @@ function doGoogleSignIn(){
     return;
   }
 
-  if(!_tokenClient) initTokenClient();
+  // Always reinitialize token client to ensure fresh state
+  _tokenClient = null;
+  initTokenClient();
 
   if(!_tokenClient){
-    showErr('signinErr','Sign-In could not be initialised. Please check your Client ID is correct.');
+    showErr('signinErr','Sign-In could not be initialised. Please check your Client ID is correct and this page origin is in your OAuth Authorised JavaScript Origins.');
     return;
   }
 
-  _tokenClient.requestAccessToken();
+  _isSigningIn = true;
+  _signInAttempts++;
+  
+  // Disable button during sign-in
+  const btn = document.getElementById('btnGoogleSignIn');
+  if(btn) {
+    btn.disabled = true;
+    btn.style.opacity = '0.6';
+    const lbl = document.getElementById('signinBtnLabel');
+    if(lbl) lbl.textContent = 'Signing in...';
+  }
+  
+  try {
+    console.log('Requesting access token...');
+    _tokenClient.requestAccessToken();
+  } catch(e) {
+    console.error('Error requesting access token:', e);
+    _isSigningIn = false;
+    showErr('signinErr', 'Failed to start sign-in: ' + e.message);
+    if(btn) {
+      btn.disabled = false;
+      btn.style.opacity = '1';
+      const lbl = document.getElementById('signinBtnLabel');
+      if(lbl) lbl.textContent = 'Continue with Google';
+    }
+  }
 }
 
 function onTokenResponse(resp){
+  console.log('Token response received:', resp ? (resp.error ? 'Error: ' + resp.error : 'Success') : 'No response');
+  
+  // Reset sign-in state
+  _isSigningIn = false;
+  const btn = document.getElementById('btnGoogleSignIn');
+  if(btn) {
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    const lbl = document.getElementById('signinBtnLabel');
+    if(lbl) lbl.textContent = 'Continue with Google';
+  }
+  
   if(resp && resp.error){
     let msg = '';
+    let shouldRetry = false;
+    
     switch(resp.error){
       case 'popup_closed_by_user':
+        msg = 'Sign-in popup was closed. Please click "Continue with Google" again to sign in.';
+        shouldRetry = true;
+        break;
       case 'popup_failed_to_open':
-        msg = 'Sign-in popup was closed or blocked. Please allow popups and try again.';
+        msg = 'Sign-in popup was blocked. Please allow popups for this site and try again.';
+        shouldRetry = true;
         break;
       case 'access_denied':
-        msg = 'Access denied. Make sure your email is added as a Test User in Google Cloud Console → OAuth consent screen.';
+        msg = 'Access denied. Make sure your email is added as a Test User in Google Cloud Console → OAuth consent screen → Test users.';
+        _signInAttempts = 0; // Reset on user action required
         break;
       case 'invalid_client':
-        msg = 'OAuth client not found. Check your Client ID is correct.';
+        msg = 'OAuth client not found. Check your Client ID is correct in the setup screen.';
+        _signInAttempts = 0; // Reset on config error
         break;
       case 'redirect_uri_mismatch':
       case 'origin_mismatch':
-        msg = `Origin mismatch. Add "${window.location.origin}" to Google Cloud Console → OAuth Client → Authorised JavaScript origins.`;
+        msg = `Origin mismatch. Add exactly "${window.location.origin}" (no trailing slash) to Google Cloud Console → Credentials → OAuth Client → Authorised JavaScript origins. Wait 5-10 minutes after saving.`;
+        _signInAttempts = 0; // Reset on config error
         break;
       default:
-        msg = 'Sign-in failed: ' + resp.error;
+        msg = 'Sign-in failed: ' + resp.error + (resp.error_description ? ' — ' + resp.error_description : '');
+        shouldRetry = true;
     }
     
     // If we were refreshing, reject all pending requests
@@ -627,9 +725,19 @@ function onTokenResponse(resp){
       _isRefreshing = false;
     }
     
-    showErr('signinErr', msg);
+    // Only show error if not a retryable popup issue
+    if(!shouldRetry || _signInAttempts >= 3){
+      showErr('signinErr', msg);
+    }
+    
+    // Reset attempts if user needs to take action
+    if(!shouldRetry){
+      _signInAttempts = 0;
+    }
+    
     return;
   }
+  
   if(!resp || !resp.access_token){
     const errorMsg = 'No access token received. Please try again.';
     
@@ -644,6 +752,10 @@ function onTokenResponse(resp){
     return;
   }
   
+  console.log('Access token received, length:', resp.access_token.length);
+  
+  // Reset sign-in attempts on success
+  _signInAttempts = 0;
   _firstSignIn = false;
   STATE.accessToken = resp.access_token;
   
@@ -661,17 +773,30 @@ function onTokenResponse(resp){
     });
   } else {
     // Initial sign-in, load reviews
+    console.log('Starting to load user and reviews...');
     loadUserAndReviews();
   }
 }
 
 function signOut(){
   if(STATE.accessToken && gisReady){
-    try{ google.accounts.oauth2.revoke(STATE.accessToken, ()=>{}); }catch(_){}
+    try{ 
+      google.accounts.oauth2.revoke(STATE.accessToken, ()=>{});
+    }catch(e){
+      console.warn('Error revoking token:', e);
+    }
   }
-  STATE.accessToken=''; STATE.accountName=''; STATE.locationName=''; STATE.reviews=[];
+  STATE.accessToken=''; 
+  STATE.accountName=''; 
+  STATE.locationName=''; 
+  STATE.reviews=[];
+  STATE.userEmail = '';
   _firstSignIn = true;
   _tokenClient = null;
+  _isSigningIn = false;
+  _signInAttempts = 0;
+  _isRefreshing = false;
+  _pendingRequests = [];
   document.getElementById('hdrUser').classList.remove('on');
   showScreen('scSignIn');
 }
@@ -685,6 +810,7 @@ async function loadUserAndReviews(){
 
   try{
     // 1. Get user info
+    console.log('Fetching user info...');
     const me = await gFetch('https://www.googleapis.com/oauth2/v2/userinfo');
     STATE.userEmail = me.email || '';
     document.getElementById('hdrUserName').textContent = me.email || 'Connected';
@@ -692,6 +818,7 @@ async function loadUserAndReviews(){
 
     // 2. Get accounts
     setLoadStatus('Loading your business accounts','Looking for your business...');
+    console.log('Fetching business accounts...');
     const accounts = await gFetch(`${ACCT_BASE}/accounts`);
     if(!accounts.accounts || accounts.accounts.length===0)
       throw new Error('No Business Profile accounts found. Make sure you are signed in with the Google account that manages your business.');
@@ -699,9 +826,11 @@ async function loadUserAndReviews(){
     const acct = accounts.accounts.find(a=>a.type==='LOCATION_GROUP'||a.type==='ORGANIZATION')
                || accounts.accounts[0];
     STATE.accountName = acct.name;
+    console.log('Account found:', STATE.accountName);
 
     // 3. List locations
     setLoadStatus('Finding your location','Almost there...');
+    console.log('Fetching locations...');
     const locs = await gFetch(`${GBP_BASE}/${STATE.accountName}/locations?pageSize=10`);
     if(!locs.locations || locs.locations.length===0)
       throw new Error('No locations found. Make sure your Business Profile is verified and linked to this Google account.');
@@ -709,13 +838,43 @@ async function loadUserAndReviews(){
     const loc = locs.locations[0];
     STATE.locationName = loc.name;
     STATE.locationDisplayName = loc.storefrontAddress?.storeName || loc.title || 'Your Business';
+    console.log('Location found:', STATE.locationName, STATE.locationDisplayName);
 
     // 4. Fetch reviews
     await fetchReviews();
 
   } catch(e){
-    showErr('signinErr', e.message || String(e));
-    showScreen('scSignIn');
+    console.error('Error loading user and reviews:', e);
+    
+    // FIX: Only redirect to sign-in if it's an authentication error
+    // For other errors (API errors, network errors), show error but stay on current screen
+    const errorMsg = e.message || String(e);
+    
+    if(errorMsg.includes('401') || errorMsg.includes('Not authenticated') || errorMsg.includes('Session expired')){
+      // Authentication error - go back to sign-in
+      showErr('signinErr', 'Authentication failed: ' + errorMsg);
+      showScreen('scSignIn');
+      // Reset token to force re-authentication
+      STATE.accessToken = '';
+      _tokenClient = null;
+      _firstSignIn = true;
+    } else if(errorMsg.includes('403') || errorMsg.includes('permission') || errorMsg.includes('Access denied')){
+      // Permission error - show error but don't loop
+      showErr('signinErr', errorMsg + ' Please check your Google Cloud Console permissions.');
+      showScreen('scSignIn');
+    } else {
+      // Other errors (network, API, etc.) - show error but don't redirect
+      // This prevents the login loop
+      const currentScreen = document.querySelector('.screen.on')?.id || 'scList';
+      if(currentScreen === 'scLoading'){
+        // If we're on loading screen, go to sign-in but with clear error
+        showErr('signinErr', errorMsg);
+        showScreen('scSignIn');
+      } else {
+        // Otherwise show error banner on current screen
+        showErr('errBanner', errorMsg);
+      }
+    }
   }
 }
 

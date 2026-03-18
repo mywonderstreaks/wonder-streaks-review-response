@@ -449,6 +449,46 @@ let _isRefreshing = false; // Flag to prevent multiple refresh attempts
 let _isSigningIn = false; // Flag to prevent multiple simultaneous sign-in attempts
 let _signInAttempts = 0; // Track sign-in attempts to prevent infinite loops
 
+// FIX: Token management constants
+const MAX_PENDING_REQUESTS = 50;
+const REQUEST_TIMEOUT = 30000; // 30 seconds
+const TOKEN_REFRESH_BUFFER = 60000; // Refresh 1 min before expiration
+let _refreshPromise = null; // Track ongoing refresh
+const DEBUG = false; // Set to true only in development
+
+// FIX: Session management functions
+function isTokenExpired(){
+  const expiresAt = sessionStorage.getItem('ws_gmb_tokenExpiresAt');
+  if(!expiresAt) return false;
+  const expirationTime = parseInt(expiresAt, 10);
+  const now = Date.now();
+  return (now + TOKEN_REFRESH_BUFFER) >= expirationTime;
+}
+
+function clearSession(){
+  STATE.accessToken = '';
+  sessionStorage.removeItem('ws_gmb_accessToken');
+  sessionStorage.removeItem('ws_gmb_refreshToken');
+  sessionStorage.removeItem('ws_gmb_tokenExpiresAt');
+}
+
+// FIX: Scope validation function
+async function validateTokenScope(token){
+  try{
+    const resp = await fetch(`https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=${encodeURIComponent(token)}`);
+    if(!resp.ok) return false;
+    
+    const data = await resp.json();
+    const grantedScopes = (data.scope || '').split(' ');
+    const requiredScope = 'https://www.googleapis.com/auth/business.manage';
+    
+    return grantedScopes.includes(requiredScope);
+  } catch(e){
+    console.error('Scope validation error:', e);
+    return false; // Fail safe - let API call fail if scope missing
+  }
+}
+
 let STATE = {
   clientId: localStorage.getItem('ws_gmb_clientId') || '',
   accessToken: '',
@@ -493,10 +533,10 @@ function initTokenClient(){
     return;
   }
   
-  // Prevent multiple initializations
-  if(_tokenClient) {
-    console.log('Token client already initialized');
-    return;
+  // FIX: Properly cleanup old token client
+  if(_tokenClient){
+    _tokenClient.callback = null;
+    _tokenClient = null;
   }
   
   try {
@@ -504,14 +544,13 @@ function initTokenClient(){
       client_id: STATE.clientId,
       scope: SCOPE,
       callback: onTokenResponse,
-      // FIX: Use 'select_account consent' for first sign-in to ensure proper flow
-      // For subsequent sign-ins, use empty string for silent refresh
       prompt: _firstSignIn ? 'select_account consent' : '',
     });
     console.log('Token client initialized successfully');
   } catch(e) {
     console.error('Failed to initialize token client:', e);
     showErr('signinErr', 'Failed to initialize Google Sign-In: ' + e.message);
+    _tokenClient = null; // Ensure null on error
   }
 }
 
@@ -531,6 +570,47 @@ function initTokenClient(){
     document.getElementById('originBox').innerHTML = '⚠️ <strong>This file must be hosted on HTTPS.</strong> Open it from a web server (GitHub Pages, Netlify, etc.) for Google Sign-In to work.';
   } else {
     document.getElementById('originHint').textContent = origin;
+  }
+
+  // FIX: Restore session if valid token exists
+  const savedToken = sessionStorage.getItem('ws_gmb_accessToken');
+  const expiresAt = sessionStorage.getItem('ws_gmb_tokenExpiresAt');
+  
+  if(savedToken && expiresAt){
+    const expirationTime = parseInt(expiresAt, 10);
+    if(Date.now() < expirationTime){
+      STATE.accessToken = savedToken;
+      console.log('Restored session from storage');
+      
+      // Validate token is still valid
+      validateTokenScope(savedToken).then(valid => {
+        if(valid){
+          // Restore user info and load reviews
+          loadUserAndReviews();
+        } else {
+          // Token invalid, clear and require re-auth
+          clearSession();
+          if(STATE.clientId){
+            showScreen('scSignIn');
+          }
+        }
+      }).catch(() => {
+        clearSession();
+        if(STATE.clientId){
+          showScreen('scSignIn');
+        }
+      });
+      
+      if(STATE.clientId){
+        const inp = document.getElementById('clientIdInput');
+        if(inp) inp.value = STATE.clientId;
+        checkClientId();
+      }
+      return; // Don't show setup screen if session restored
+    } else {
+      // Token expired, clear
+      clearSession();
+    }
   }
 
   if(STATE.clientId){
@@ -637,8 +717,30 @@ function doGoogleSignIn(){
     return;
   }
 
-  // Always reinitialize token client to ensure fresh state
-  _tokenClient = null;
+  // FIX: Check network connectivity
+  if(!navigator.onLine){
+    showErr('signinErr', 'You are offline. Please check your internet connection and try again.');
+    return;
+  }
+  
+  // FIX: Test popup capability before attempting sign-in
+  try{
+    const testPopup = window.open('', '_blank', 'width=1,height=1');
+    if(!testPopup || testPopup.closed || typeof testPopup.closed === 'undefined'){
+      showErr('signinErr', 'Popups are blocked. Please allow popups for this site and try again.');
+      return;
+    }
+    testPopup.close();
+  } catch(e){
+    showErr('signinErr', 'Cannot open popup. Please allow popups for this site and try again.');
+    return;
+  }
+
+  // FIX: Properly cleanup old token client
+  if(_tokenClient){
+    _tokenClient.callback = null;
+    _tokenClient = null;
+  }
   initTokenClient();
 
   if(!_tokenClient){
@@ -649,6 +751,10 @@ function doGoogleSignIn(){
   _isSigningIn = true;
   _signInAttempts++;
   
+  // FIX: Show loading state
+  showScreen('scLoading');
+  setLoadStatus('Connecting to Google', 'Opening sign-in window...');
+  
   // Disable button during sign-in
   const btn = document.getElementById('btnGoogleSignIn');
   if(btn) {
@@ -658,12 +764,32 @@ function doGoogleSignIn(){
     if(lbl) lbl.textContent = 'Signing in...';
   }
   
+  // FIX: Add timeout for OAuth flow
+  const oauthTimeout = setTimeout(() => {
+    if(_isSigningIn){
+      _isSigningIn = false;
+      showScreen('scSignIn');
+      showErr('signinErr', 'Sign-in timed out. Please check your internet connection and try again.');
+      const btn = document.getElementById('btnGoogleSignIn');
+      if(btn){
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        const lbl = document.getElementById('signinBtnLabel');
+        if(lbl) lbl.textContent = 'Continue with Google';
+      }
+    }
+  }, 120000); // 2 minute timeout
+  
+  window._oauthTimeout = oauthTimeout;
+  
   try {
     console.log('Requesting access token...');
     _tokenClient.requestAccessToken();
   } catch(e) {
+    clearTimeout(oauthTimeout);
     console.error('Error requesting access token:', e);
     _isSigningIn = false;
+    showScreen('scSignIn');
     showErr('signinErr', 'Failed to start sign-in: ' + e.message);
     if(btn) {
       btn.disabled = false;
@@ -675,7 +801,17 @@ function doGoogleSignIn(){
 }
 
 function onTokenResponse(resp){
-  console.log('Token response received:', resp ? (resp.error ? 'Error: ' + resp.error : 'Success') : 'No response');
+  // FIX: Clear OAuth timeout if set
+  if(window._oauthTimeout){
+    clearTimeout(window._oauthTimeout);
+    window._oauthTimeout = null;
+  }
+  
+  if(DEBUG){
+    console.log('Token response received:', resp ? (resp.error ? 'Error: ' + resp.error : 'Success') : 'No response');
+  } else {
+    console.log('Token response received:', resp ? (resp.error ? 'Error' : 'Success') : 'No response');
+  }
   
   // Reset sign-in state
   _isSigningIn = false;
@@ -702,35 +838,33 @@ function onTokenResponse(resp){
         break;
       case 'access_denied':
         msg = 'Access denied. Make sure your email is added as a Test User in Google Cloud Console → OAuth consent screen → Test users.';
-        _signInAttempts = 0; // Reset on user action required
+        _signInAttempts = 0;
         break;
       case 'invalid_client':
         msg = 'OAuth client not found. Check your Client ID is correct in the setup screen.';
-        _signInAttempts = 0; // Reset on config error
+        _signInAttempts = 0;
         break;
       case 'redirect_uri_mismatch':
       case 'origin_mismatch':
         msg = `Origin mismatch. Add exactly "${window.location.origin}" (no trailing slash) to Google Cloud Console → Credentials → OAuth Client → Authorised JavaScript origins. Wait 5-10 minutes after saving.`;
-        _signInAttempts = 0; // Reset on config error
+        _signInAttempts = 0;
         break;
       default:
         msg = 'Sign-in failed: ' + resp.error + (resp.error_description ? ' — ' + resp.error_description : '');
         shouldRetry = true;
     }
     
-    // If we were refreshing, reject all pending requests
     if(_isRefreshing){
       _pendingRequests.forEach(({reject}) => reject(new Error(msg)));
       _pendingRequests = [];
       _isRefreshing = false;
+      _refreshPromise = null;
     }
     
-    // Only show error if not a retryable popup issue
     if(!shouldRetry || _signInAttempts >= 3){
       showErr('signinErr', msg);
     }
     
-    // Reset attempts if user needs to take action
     if(!shouldRetry){
       _signInAttempts = 0;
     }
@@ -741,41 +875,80 @@ function onTokenResponse(resp){
   if(!resp || !resp.access_token){
     const errorMsg = 'No access token received. Please try again.';
     
-    // If we were refreshing, reject all pending requests
     if(_isRefreshing){
       _pendingRequests.forEach(({reject}) => reject(new Error(errorMsg)));
       _pendingRequests = [];
       _isRefreshing = false;
+      _refreshPromise = null;
     }
     
     showErr('signinErr', errorMsg);
     return;
   }
   
-  console.log('Access token received, length:', resp.access_token.length);
+  // FIX: Store refresh token if provided (first-time auth)
+  if(resp.refresh_token){
+    sessionStorage.setItem('ws_gmb_refreshToken', resp.refresh_token);
+    if(DEBUG) console.log('Refresh token stored');
+  }
   
-  // Reset sign-in attempts on success
+  // FIX: Store token expiration time
+  const expiresIn = resp.expires_in || 3600; // Default 1 hour
+  const expiresAt = Date.now() + (expiresIn * 1000);
+  sessionStorage.setItem('ws_gmb_tokenExpiresAt', expiresAt.toString());
+  
+  // FIX: Persist access token
+  sessionStorage.setItem('ws_gmb_accessToken', resp.access_token);
+  
   _signInAttempts = 0;
   _firstSignIn = false;
   STATE.accessToken = resp.access_token;
   
-  // If we were refreshing, resolve all pending requests
-  if(_isRefreshing){
-    const requestsToRetry = [..._pendingRequests];
-    _pendingRequests = [];
-    _isRefreshing = false;
+  // FIX: Validate scope before proceeding
+  validateTokenScope(resp.access_token).then(hasScope => {
+    if(!hasScope){
+      STATE.accessToken = '';
+      clearSession();
+      showErr('signinErr', 'Required permissions were not granted. Please sign in again and grant all requested permissions.');
+      _signInAttempts = 0;
+      return;
+    }
     
-    // Retry all queued requests with new token
-    requestsToRetry.forEach(({resolve, reject, url, method, body}) => {
-      gFetch(url, method, body)
-        .then(resolve)
-        .catch(err => reject(err));
-    });
-  } else {
-    // Initial sign-in, load reviews
-    console.log('Starting to load user and reviews...');
-    loadUserAndReviews();
-  }
+    // If we were refreshing, resolve all pending requests
+    if(_isRefreshing){
+      const requestsToRetry = [..._pendingRequests];
+      _pendingRequests = [];
+      _isRefreshing = false;
+      _refreshPromise = null;
+      
+      requestsToRetry.forEach(({resolve, reject, url, method, body}) => {
+        gFetch(url, method, body)
+          .then(resolve)
+          .catch(err => reject(err));
+      });
+    } else {
+      // Initial sign-in, load reviews
+      console.log('Starting to load user and reviews...');
+      loadUserAndReviews();
+    }
+  }).catch(e => {
+    console.error('Scope validation error:', e);
+    // Proceed anyway, API will fail with 403 if scope missing
+    if(_isRefreshing){
+      const requestsToRetry = [..._pendingRequests];
+      _pendingRequests = [];
+      _isRefreshing = false;
+      _refreshPromise = null;
+      
+      requestsToRetry.forEach(({resolve, reject, url, method, body}) => {
+        gFetch(url, method, body)
+          .then(resolve)
+          .catch(err => reject(err));
+      });
+    } else {
+      loadUserAndReviews();
+    }
+  });
 }
 
 function signOut(){
@@ -786,7 +959,10 @@ function signOut(){
       console.warn('Error revoking token:', e);
     }
   }
-  STATE.accessToken=''; 
+  
+  // FIX: Clear all session data
+  clearSession();
+  
   STATE.accountName=''; 
   STATE.locationName=''; 
   STATE.reviews=[];
@@ -796,6 +972,7 @@ function signOut(){
   _isSigningIn = false;
   _signInAttempts = 0;
   _isRefreshing = false;
+  _refreshPromise = null;
   _pendingRequests = [];
   document.getElementById('hdrUser').classList.remove('on');
   showScreen('scSignIn');
@@ -1236,104 +1413,244 @@ function afterSuccess(){
 }
 
 // ════════════════════════════════════════════════════════
+// TOKEN REFRESH
+// ════════════════════════════════════════════════════════
+async function refreshAccessToken(){
+  // Prevent multiple simultaneous refresh attempts
+  if(_refreshPromise){
+    console.log('Refresh already in progress, waiting...');
+    return _refreshPromise;
+  }
+  
+  if(!_tokenClient || !gisReady){
+    throw new Error('Cannot refresh token: token client not available');
+  }
+  
+  _isRefreshing = true;
+  _refreshPromise = new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      _isRefreshing = false;
+      _refreshPromise = null;
+      reject(new Error('Token refresh timed out'));
+    }, 30000);
+    
+    // Store original callback
+    const originalCallback = _tokenClient.callback;
+    
+    // Temporary callback override for refresh
+    _tokenClient.callback = (resp) => {
+      clearTimeout(timeout);
+      _isRefreshing = false;
+      _refreshPromise = null;
+      _tokenClient.callback = originalCallback;
+      
+      if(resp && resp.error){
+        reject(new Error('Token refresh failed: ' + resp.error));
+      } else if(resp && resp.access_token){
+        STATE.accessToken = resp.access_token;
+        sessionStorage.setItem('ws_gmb_accessToken', resp.access_token);
+        if(resp.expires_in){
+          const expiresAt = Date.now() + (resp.expires_in * 1000);
+          sessionStorage.setItem('ws_gmb_tokenExpiresAt', expiresAt.toString());
+        }
+        resolve(resp.access_token);
+      } else {
+        reject(new Error('No access token in refresh response'));
+      }
+    };
+    
+    try{
+      _firstSignIn = false; // Silent refresh
+      _tokenClient.requestAccessToken();
+    } catch(e){
+      clearTimeout(timeout);
+      _isRefreshing = false;
+      _refreshPromise = null;
+      _tokenClient.callback = originalCallback;
+      reject(e);
+    }
+  });
+  
+  return _refreshPromise;
+}
+
+// ════════════════════════════════════════════════════════
 // GOOGLE API FETCH HELPER
 // ════════════════════════════════════════════════════════
 async function gFetch(url, method='GET', body=null, retries=3){
+  // FIX: Check token expiration proactively
+  if(isTokenExpired() && !_isRefreshing){
+    console.log('Token expired, refreshing before API call...');
+    try{
+      await refreshAccessToken();
+    } catch(e){
+      console.error('Token refresh failed:', e);
+      // Continue anyway, will get 401 and retry
+    }
+  }
+  
   if(!STATE.accessToken && !_isRefreshing){
     throw new Error('Not authenticated — please sign in again.');
   }
+  
+  // FIX: Add request timeout
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000);
   
   const opts = {
     method,
     headers: {
       'Authorization': 'Bearer '+STATE.accessToken,
       'Content-Type': 'application/json',
-    }
+    },
+    signal: controller.signal
   };
   if(body) opts.body = JSON.stringify(body);
 
   try{
     const resp = await fetch(url, opts);
+    clearTimeout(timeoutId);
     const text = await resp.text();
     
     if(!resp.ok){
       let msg = resp.status+' '+resp.statusText;
+      let errorData = null;
+      
       try{
-        const j = JSON.parse(text);
-        msg = j.error?.message || j.error?.errors?.[0]?.message || msg;
+        errorData = JSON.parse(text);
+        msg = errorData.error?.message || errorData.error?.errors?.[0]?.message || msg;
       } catch(_){}
 
-      // FIX: Handle 401 with automatic token refresh and retry
-      if(resp.status===401){
-        // If we're already refreshing, wait for it
-        if(_isRefreshing){
-          return new Promise((resolve, reject) => {
-            _pendingRequests.push({resolve, reject, url, method, body});
-          });
-        }
-        
-        // Start refresh process
-        _isRefreshing = true;
-        STATE.accessToken = '';
-        document.getElementById('hdrUser').classList.remove('on');
-        
-        if(_tokenClient && gisReady){
-          // Try silent refresh first
-          _firstSignIn = false;
+      // FIX: Comprehensive Google API error handling
+      switch(resp.status){
+        case 400:
+          if(errorData?.error?.message?.includes('invalid_grant')){
+            STATE.accessToken = '';
+            _tokenClient = null;
+            clearSession();
+            showScreen('scSignIn');
+            throw new Error('Your session has expired. Please sign in again.');
+          }
+          throw new Error('Invalid request: ' + msg);
           
-          return new Promise((resolve, reject) => {
-            // Queue this request
-            _pendingRequests.push({resolve, reject, url, method, body});
-            
-            // Attempt token refresh
-            try{
-              _tokenClient.requestAccessToken();
-              
-              // Set timeout in case refresh fails silently
-              setTimeout(() => {
-                if(_isRefreshing){
-                  _isRefreshing = false;
-                  _pendingRequests.forEach(p => p.reject(new Error('Token refresh timed out. Please sign in again.')));
-                  _pendingRequests = [];
-                  showScreen('scSignIn');
-                }
-              }, 30000); // 30 second timeout
-            } catch(e){
-              _isRefreshing = false;
-              _pendingRequests = [];
-              showScreen('scSignIn');
-              reject(new Error('Session expired. Please sign in again.'));
+        case 401:
+          // If we're already refreshing, wait for it
+          if(_isRefreshing){
+            if(_pendingRequests.length >= MAX_PENDING_REQUESTS){
+              throw new Error('Too many pending requests. Please refresh the page.');
             }
-          });
-        } else {
-          // No token client available, need manual sign-in
-          _isRefreshing = false;
-          showScreen('scSignIn');
-          throw new Error('Session expired. Please sign in again.');
-        }
+            
+            return new Promise((resolve, reject) => {
+              const requestEntry = {
+                resolve, 
+                reject, 
+                url, 
+                method, 
+                body, 
+                timestamp: Date.now()
+              };
+              _pendingRequests.push(requestEntry);
+              
+              setTimeout(() => {
+                const index = _pendingRequests.indexOf(requestEntry);
+                if(index >= 0){
+                  _pendingRequests.splice(index, 1);
+                  reject(new Error('Request timed out while waiting for token refresh'));
+                }
+              }, REQUEST_TIMEOUT);
+            });
+          }
+          
+          // Start refresh process
+          try{
+            await refreshAccessToken();
+            // Retry the original request
+            return gFetch(url, method, body, retries);
+          } catch(e){
+            _isRefreshing = false;
+            _refreshPromise = null;
+            clearSession();
+            showScreen('scSignIn');
+            throw new Error('Session expired. Please sign in again.');
+          }
+          
+        case 403:
+          // FIX: Categorize 403 errors
+          if(errorData?.error?.message?.includes('quota')){
+            throw new Error('API quota exceeded. Please try again later or check your Google Cloud Console quota limits.');
+          }
+          if(errorData?.error?.message?.includes('permission') || errorData?.error?.message?.includes('forbidden')){
+            throw new Error('Permission denied. Make sure your Google account has access to this Business Profile and the required permissions are granted.');
+          }
+          if(errorData?.error?.message?.includes('location')){
+            throw new Error('Location access denied. The Business Profile may not be accessible with your current account.');
+          }
+          throw new Error('Access forbidden: ' + msg + '. Check your Google Cloud Console permissions.');
+          
+        case 404:
+          throw new Error('Resource not found. The business profile or review may have been deleted or is not accessible.');
+          
+        case 429:
+          // Rate limiting with retry
+          if(retries > 0){
+            const retryAfter = resp.headers.get('Retry-After');
+            const delay = retryAfter ? parseInt(retryAfter) * 1000 : 1000 * Math.pow(2, 3-retries);
+            await new Promise(r => setTimeout(r, delay));
+            return gFetch(url, method, body, retries-1);
+          }
+          throw new Error('Rate limit exceeded. Please wait a moment and try again.');
+          
+        case 500:
+        case 502:
+        case 503:
+          // Retry for server errors
+          if(retries > 0){
+            const delay = 2000 * Math.pow(2, 3-retries);
+            await new Promise(r => setTimeout(r, delay));
+            return gFetch(url, method, body, retries-1);
+          }
+          throw new Error('Google API is temporarily unavailable. Please try again in a few minutes.');
+          
+        default:
+          throw new Error(`API error (${resp.status}): ${msg}`);
       }
-
-      // FIX: Handle rate limiting with retry
-      if(resp.status===429 && retries > 0){
-        const delay = 1000 * Math.pow(2, 3-retries);
-        await new Promise(r => setTimeout(r, delay));
-        return gFetch(url, method, body, retries-1);
-      }
-
-      throw new Error(msg);
     }
     
     if(!text) return {};
     return JSON.parse(text);
+    
   } catch(e){
+    clearTimeout(timeoutId);
+    
+    // Handle AbortError (timeout)
+    if(e.name === 'AbortError'){
+      if(retries > 0){
+        console.log('Request timed out, retrying...');
+        return gFetch(url, method, body, retries-1);
+      }
+      throw new Error('Request timed out. Please check your internet connection and try again.');
+    }
+    
     // Don't wrap errors that are already from token refresh
     if(e.message.includes('Session expired') || e.message.includes('Token refresh')){
       throw e;
     }
     
+    // FIX: Retry network errors
+    if((e.message.includes('Failed to fetch') || 
+        e.message.includes('NetworkError') ||
+        e.name === 'TypeError') && 
+       retries > 0){
+      console.log(`Network error, retrying... (${retries} attempts left)`);
+      const delay = 1000 * Math.pow(2, 3-retries);
+      await new Promise(r => setTimeout(r, delay));
+      return gFetch(url, method, body, retries-1);
+    }
+    
     if(e.message.includes('Failed to fetch') || e.message.includes('NetworkError')){
       throw new Error('Network error. Check your internet connection and try again.');
     }
+    
     throw e;
   }
 }

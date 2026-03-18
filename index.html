@@ -104,7 +104,7 @@ button,input,label,textarea{-webkit-appearance:none;appearance:none;font-family:
 .ri-name{font-size:12.5px;font-weight:700;color:var(--dark);flex:1;}
 .ri-stars{font-size:11px;letter-spacing:1px;}
 .ri-date{font-size:10px;color:var(--muted);}
-.ri-text{font-size:12px;color:var(--muted);line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.ri-text{font-size:12px;color:var(--muted);line-height:1.55;display:-webkit-box;-webkit-line-clamp:2;line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
 .ri-arrow{position:absolute;right:12px;top:50%;transform:translateY(-50%);font-size:14px;color:var(--blush);}
 .replied-badge{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:700;color:var(--green);background:var(--green-l);border:1px solid var(--green-b);border-radius:6px;padding:2px 7px;}
 .new-badge{display:inline-flex;align-items:center;gap:3px;font-size:9.5px;font-weight:700;color:var(--rose-d);background:var(--rose-ll);border:1px solid var(--blush);border-radius:6px;padding:2px 7px;}
@@ -444,6 +444,8 @@ const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
 let gisReady = false;
 let _tokenClient = null;
 let _firstSignIn = true;
+let _pendingRequests = []; // Queue for requests waiting for token refresh
+let _isRefreshing = false; // Flag to prevent multiple refresh attempts
 
 let STATE = {
   clientId: localStorage.getItem('ws_gmb_clientId') || '',
@@ -617,16 +619,50 @@ function onTokenResponse(resp){
       default:
         msg = 'Sign-in failed: ' + resp.error;
     }
+    
+    // If we were refreshing, reject all pending requests
+    if(_isRefreshing){
+      _pendingRequests.forEach(({reject}) => reject(new Error(msg)));
+      _pendingRequests = [];
+      _isRefreshing = false;
+    }
+    
     showErr('signinErr', msg);
     return;
   }
   if(!resp || !resp.access_token){
-    showErr('signinErr','No access token received. Please try again.');
+    const errorMsg = 'No access token received. Please try again.';
+    
+    // If we were refreshing, reject all pending requests
+    if(_isRefreshing){
+      _pendingRequests.forEach(({reject}) => reject(new Error(errorMsg)));
+      _pendingRequests = [];
+      _isRefreshing = false;
+    }
+    
+    showErr('signinErr', errorMsg);
     return;
   }
+  
   _firstSignIn = false;
   STATE.accessToken = resp.access_token;
-  loadUserAndReviews();
+  
+  // If we were refreshing, resolve all pending requests
+  if(_isRefreshing){
+    const requestsToRetry = [..._pendingRequests];
+    _pendingRequests = [];
+    _isRefreshing = false;
+    
+    // Retry all queued requests with new token
+    requestsToRetry.forEach(({resolve, reject, url, method, body}) => {
+      gFetch(url, method, body)
+        .then(resolve)
+        .catch(err => reject(err));
+    });
+  } else {
+    // Initial sign-in, load reviews
+    loadUserAndReviews();
+  }
 }
 
 function signOut(){
@@ -1044,7 +1080,9 @@ function afterSuccess(){
 // GOOGLE API FETCH HELPER
 // ════════════════════════════════════════════════════════
 async function gFetch(url, method='GET', body=null, retries=3){
-  if(!STATE.accessToken) throw new Error('Not authenticated — please sign in again.');
+  if(!STATE.accessToken && !_isRefreshing){
+    throw new Error('Not authenticated — please sign in again.');
+  }
   
   const opts = {
     method,
@@ -1066,17 +1104,54 @@ async function gFetch(url, method='GET', body=null, retries=3){
         msg = j.error?.message || j.error?.errors?.[0]?.message || msg;
       } catch(_){}
 
-      // FIX: Handle 401 with token refresh
+      // FIX: Handle 401 with automatic token refresh and retry
       if(resp.status===401){
-        STATE.accessToken='';
-        document.getElementById('hdrUser').classList.remove('on');
-        if(_tokenClient){
-          _firstSignIn = false; // Try silent refresh
-          _tokenClient.requestAccessToken();
-          throw new Error('Session expired — re-authenticating. Please try again in a moment.');
+        // If we're already refreshing, wait for it
+        if(_isRefreshing){
+          return new Promise((resolve, reject) => {
+            _pendingRequests.push({resolve, reject, url, method, body});
+          });
         }
-        showScreen('scSignIn');
-        throw new Error('Session expired. Please sign in again.');
+        
+        // Start refresh process
+        _isRefreshing = true;
+        STATE.accessToken = '';
+        document.getElementById('hdrUser').classList.remove('on');
+        
+        if(_tokenClient && gisReady){
+          // Try silent refresh first
+          _firstSignIn = false;
+          
+          return new Promise((resolve, reject) => {
+            // Queue this request
+            _pendingRequests.push({resolve, reject, url, method, body});
+            
+            // Attempt token refresh
+            try{
+              _tokenClient.requestAccessToken();
+              
+              // Set timeout in case refresh fails silently
+              setTimeout(() => {
+                if(_isRefreshing){
+                  _isRefreshing = false;
+                  _pendingRequests.forEach(p => p.reject(new Error('Token refresh timed out. Please sign in again.')));
+                  _pendingRequests = [];
+                  showScreen('scSignIn');
+                }
+              }, 30000); // 30 second timeout
+            } catch(e){
+              _isRefreshing = false;
+              _pendingRequests = [];
+              showScreen('scSignIn');
+              reject(new Error('Session expired. Please sign in again.'));
+            }
+          });
+        } else {
+          // No token client available, need manual sign-in
+          _isRefreshing = false;
+          showScreen('scSignIn');
+          throw new Error('Session expired. Please sign in again.');
+        }
       }
 
       // FIX: Handle rate limiting with retry
@@ -1092,6 +1167,11 @@ async function gFetch(url, method='GET', body=null, retries=3){
     if(!text) return {};
     return JSON.parse(text);
   } catch(e){
+    // Don't wrap errors that are already from token refresh
+    if(e.message.includes('Session expired') || e.message.includes('Token refresh')){
+      throw e;
+    }
+    
     if(e.message.includes('Failed to fetch') || e.message.includes('NetworkError')){
       throw new Error('Network error. Check your internet connection and try again.');
     }
